@@ -4,7 +4,7 @@ import ProjectCard from "./components/ProjectCard";
 import "./App.css";
 import { auth } from "./firebase";
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { db } from "./firebase";
 import { collection, addDoc, query, where, getDocs, onSnapshot, doc, deleteDoc, updateDoc } from "firebase/firestore";
 
@@ -15,6 +15,7 @@ function App() {
   const [newProject, setNewProject] = useState({ title: '', description: '', technologies: '', github: '' });
   const [editId, setEditId] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [editingField, setEditingField] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -54,14 +55,27 @@ function App() {
   const handleAddProject = async (e) => {
     e.preventDefault();
     if (!newProject.title || !newProject.description || !newProject.github) return;
-    await addDoc(collection(db, "projects"), {
-      ...newProject,
-      technologies: newProject.technologies.split(",").map(t => t.trim()),
-      uid: user.uid,
-      createdAt: new Date()
-    });
-    setNewProject({ title: '', description: '', technologies: '', github: '' });
+
+    setShowForm(false);
+    setEditId(null);
+    setEditingField(null);
+
+    setLoading(true);
+    try {
+      await addDoc(collection(db, "projects"), {
+        ...newProject,
+        technologies: newProject.technologies.split(",").map(t => t.trim()),
+        uid: user.uid,
+        createdAt: new Date()
+      });
+      setNewProject({ title: '', description: '', technologies: '', github: '' });
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      // Si quieres, aquí puedes mostrar un mensaje de error al usuario
+    }
   };
+
 
   const handleEdit = (project) => {
     setEditId(project.id);
@@ -91,6 +105,14 @@ function App() {
     setEditId(null);
     setNewProject({ title: '', description: '', technologies: '', github: '' });
   };
+
+  // Cierra el modal automáticamente cuando se agrega un nuevo proyecto
+  useEffect(() => {
+    if (showForm && !editId && projects.length > 0 && !Object.values(newProject).some(v => v)) {
+      setShowForm(false);
+      setEditingField(null);
+    }
+  }, [projects]);
 
   return (
     <div className="container py-4">
@@ -143,28 +165,55 @@ function App() {
                         'Enlace a GitHub'
                       }
                       style={{ borderRadius: 8, fontSize: '1.1rem', marginBottom: 12, width: '100%' }}
+                      autoFocus={showForm && !editId && field === 'title'}
+                      editingField={editingField}
+                      setEditingField={setEditingField}
+                      disabled={showForm && !editId && loading}
                     />
                   ))}
-                  <div className="d-flex gap-2 w-100 justify-content-center mt-3">
-                    <button type="submit" className="bottom-google-login d-flex align-items-center justify-content-center gap-2 px-4 py-2">
-                      <img src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_2013_Google.png" alt="Google" style={{ width: 24, height: 24 }} />
-                      {editId ? 'Actualizar Proyecto' : 'Agregar Proyecto'}
+                  <div className="d-flex w-100 justify-content-center mt-3" style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '2.5rem' }}>
+                    <button
+                      type="submit"
+                      className="bottom-google-login d-flex align-items-center justify-content-center gap-2 px-4 py-2"
+                      disabled={loading || !newProject.title || !newProject.description || !newProject.technologies || !newProject.github}
+                      style={{
+                        opacity: (loading || !newProject.title || !newProject.description || !newProject.technologies || !newProject.github) ? 0.5 : 1,
+                        pointerEvents: (loading || !newProject.title || !newProject.description || !newProject.technologies || !newProject.github) ? 'none' : 'auto',
+                        transition: 'opacity 0.2s, box-shadow 0.2s',
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.boxShadow = '0 8px 24px rgba(13,110,253,0.18)'}
+                      onMouseLeave={e => e.currentTarget.style.boxShadow = ''}
+                    >
+                      {editId ? 'Actualizar Proyecto' : loading ? 'Agregando...' : 'Agregar Proyecto'}
                     </button>
-                    <button type="button" className="bottom-google-login d-flex align-items-center justify-content-center gap-2 px-4 py-2" onClick={() => { setEditId(null); setShowForm(false); setNewProject({ title: '', description: '', technologies: '', github: '' }); }}>
-                      <img src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_2013_Google.png" alt="Cancelar" style={{ width: 24, height: 24 }} />
+                    <button
+                      type="button"
+                      className="bottom-google-login d-flex align-items-center justify-content-center gap-2 px-4 py-2"
+                      onClick={() => { setEditId(null); setShowForm(false); setNewProject({ title: '', description: '', technologies: '', github: '' }); }}
+                      disabled={loading}
+                      style={{ transition: 'opacity 0.2s, box-shadow 0.2s' }}
+                      onMouseEnter={e => e.currentTarget.style.boxShadow = '0 8px 24px rgba(13,110,253,0.18)'}
+                      onMouseLeave={e => e.currentTarget.style.boxShadow = ''}
+                    >
                       Cancelar
                     </button>
                   </div>
                 </form>
-                <button onClick={() => { setEditId(null); setShowForm(false); setNewProject({ title: '', description: '', technologies: '', github: '' }); }} style={{ position: 'absolute', top: 12, right: 16, background: 'none', border: 'none', color: '#fff', fontSize: 28, cursor: 'pointer', lineHeight: 1 }} title="Cerrar">×</button>
+                <button onClick={() => { setEditId(null); setShowForm(false); setNewProject({ title: '', description: '', technologies: '', github: '' }); }} style={{ position: 'absolute', top: 12, right: 16, background: 'none', border: 'none', color: '#fff', fontSize: 28, cursor: 'pointer', lineHeight: 1 }} title="Cerrar" disabled={loading}>×</button>
               </div>
             </div>
           )}
           {/* Botón para abrir el modal */}
           {!showForm && !editId && (
             <div className="d-flex justify-content-center mb-4">
-              <button className="bottom-google-login d-flex align-items-center justify-content-center gap-2 px-4 py-2" onClick={() => setShowForm(true)}>
-                <img src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_2013_Google.png" alt="Agregar" style={{ width: 24, height: 24 }} />
+              <button
+                className="bottom-add d-flex align-items-center justify-content-center gap-2 px-4 py-2"
+                onClick={() => {
+                  setShowForm(true);
+                  setNewProject({ title: '', description: '', technologies: '', github: '' });
+                  setEditingField(null);
+                }}
+              >
                 Agregar Proyecto
               </button>
             </div>
@@ -191,50 +240,94 @@ function App() {
   );
 }
 
-function EditableButtonInput({ value, onChange, name, placeholder, style }) {
+function EditableButtonInput({ value, onChange, name, placeholder, style, autoFocus, editingField, setEditingField }) {
   const [editing, setEditing] = React.useState(false);
-  const inputRef = useRef(null);
-  const wrapperRef = useRef(null);
+  const inputRef = React.useRef(null);
 
   React.useEffect(() => {
-    if (editing && inputRef.current) {
-      inputRef.current.focus();
+    if (autoFocus) {
+      setEditing(true);
+      setEditingField(name);
     }
-  }, [editing]);
+  }, [autoFocus, name, setEditingField]);
 
-  // Si el mouse sale del área del input o botón, vuelve al estado normal
-  const handleMouseLeave = () => {
+  React.useEffect(() => {
+    if (editing && inputRef.current && editingField === name) {
+      if (name === 'title' && autoFocus) {
+        inputRef.current.focus({ preventScroll: true });
+        inputRef.current.select();
+      } else {
+        inputRef.current.focus({ preventScroll: true });
+      }
+    }
+  }, [editing, name, autoFocus, editingField]);
+
+  const handleButtonClick = () => {
+    setEditing(true);
+    setEditingField(name);
+  };
+
+  const handleBlur = () => {
     setEditing(false);
+    setEditingField(null);
   };
 
   return (
-    <div style={{ width: '100%' }} onMouseLeave={handleMouseLeave} ref={wrapperRef}>
-      {editing ? (
+    <div style={{ width: '100%' }}>
+      {editing && editingField === name ? (
         <input
           ref={inputRef}
           type="text"
           name={name}
           value={value}
           onChange={onChange}
-          onBlur={() => setEditing(false)}
+          onBlur={handleBlur}
           placeholder={placeholder}
           style={{
             ...style,
             background: 'linear-gradient(90deg, #f8fafc 60%, #e0e7ff 100%)',
             color: '#23272b',
-            border: '2px solid #0d6efd',
+            border: '2px solid #dadce0',
             padding: '0.7rem 1.2rem',
             fontWeight: 600,
             fontSize: '1.15rem',
-            boxShadow: '0 4px 16px rgba(13,110,253,0.10)',
-            transition: 'all 0.2s',
+            boxShadow: '0 8px 24px rgba(13,110,253,0.18)',
+            transition: 'background 0.18s, box-shadow 0.18s, border 0.18s',
             outline: 'none',
             borderRadius: 12,
+            transform: 'translateY(3px) scale(1.05)',
+            maxWidth: '100%',
+            width: '90%'
+          }}
+          tabIndex={0}
+          onKeyDown={e => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              const fields = ['title', 'description', 'technologies', 'github'];
+              const idx = fields.indexOf(name);
+              if (idx !== -1 && idx < fields.length - 1) {
+                handleBlur();
+                setTimeout(() => {
+                  if (typeof window !== 'undefined') {
+                    const nextBtn = document.querySelector(`button[name='${fields[idx+1]}']`);
+                    if (nextBtn) nextBtn.click();
+                  }
+                }, 0);
+              } else if (name === 'github') {
+                // Si es el último campo, dispara el submit del formulario
+                if (inputRef.current) {
+                  let form = inputRef.current.form;
+                  if (form) form.requestSubmit();
+                }
+                // El cierre del modal se maneja solo en handleAddProject
+              }
+            }
           }}
         />
       ) : (
         <button
           type="button"
+          name={name}
           className="bottom-google-login d-flex align-items-center justify-content-start gap-2 px-4 py-2 mb-2 editable-btn-input"
           style={{
             ...style,
@@ -252,10 +345,9 @@ function EditableButtonInput({ value, onChange, name, placeholder, style }) {
             position: 'relative',
             overflow: 'hidden',
           }}
-          onMouseEnter={() => setEditing(true)}
+          onClick={handleButtonClick}
         >
           <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <img src="https://cdn-icons-png.flaticon.com/512/1828/1828911.png" alt="edit" style={{ width: 20, height: 20, opacity: 0.7 }} />
             {value || <span style={{ color: '#888' }}>{placeholder}</span>}
           </span>
         </button>
