@@ -315,7 +315,7 @@ function App() {
           )}
           {/* Botón para abrir el modal */}
           {!showForm && !editId && (
-            <div className="d-flex justify-content-center mb-4">
+            <div className="d-flex justify-content-center mb-4" style={{ marginLeft: '32rem'}}>
               <button
                 className="bottom-add d-flex align-items-center justify-content-center gap-2 px-4 py-2"
                 onClick={() => {
@@ -326,6 +326,20 @@ function App() {
               >
                 Agregar Proyecto
               </button>
+
+              <button
+                className="filtro-btn filtro-btn-custom"
+                style={{
+                  marginLeft: '29rem',
+                  boxShadow: showFilter ? '0 0 0 3px #3898f1' : 'none',
+                  background: 'transparent'
+                }}
+                onClick={() => setShowFilter(f => !f)}
+                title="Filtrar proyectos"
+              >
+                <img src={miFiltro} alt="Filtrar" width={36} height={36} />
+              </button>
+
             </div>
           )}
           {(loading && (showForm || editId)) ? (
