@@ -96,14 +96,24 @@ function App() {
   const handleUpdateProject = async (e) => {
     e.preventDefault();
     if (!editId) return;
-    await updateDoc(doc(db, "projects", editId), {
-      title: newProject.title,
-      description: newProject.description,
-      technologies: newProject.technologies.split(",").map(t => t.trim()),
-      github: newProject.github
-    });
+    setShowForm(false);
     setEditId(null);
-    setNewProject({ title: '', description: '', technologies: '', github: '' });
+    setEditingField(null);
+    setLoading(true);
+    try {
+      await updateDoc(doc(db, "projects", editId), {
+        title: newProject.title,
+        description: newProject.description,
+        technologies: newProject.technologies.split(",").map(t => t.trim()),
+        github: newProject.github,
+        uid: user.uid
+      });
+      setNewProject({ title: '', description: '', technologies: '', github: '' });
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      // Si quieres, aquí puedes mostrar un mensaje de error al usuario
+    }
   };
 
   // Cierra el modal automáticamente cuando se agrega un nuevo proyecto
@@ -113,6 +123,42 @@ function App() {
       setEditingField(null);
     }
   }, [projects]);
+
+  // Variable para guardar el scrollY fuera del render
+  const lastScrollY = React.useRef(0);
+
+  // Bloquear el scroll del body y fijar la posición cuando el modal está abierto
+  useEffect(() => {
+    if (showForm || editId) {
+      lastScrollY.current = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${lastScrollY.current}px`;
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.width = '100vw';
+      document.body.style.overflow = 'hidden';
+    } else {
+      // Restaurar body y scroll en el siguiente frame
+      const y = lastScrollY.current;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: y, behavior: 'auto' });
+      });
+    }
+    return () => {
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+    };
+  }, [showForm, editId]);
 
   return (
     <div className="container py-4">
@@ -218,7 +264,7 @@ function App() {
               </button>
             </div>
           )}
-          {loading ? (
+          {(loading && (showForm || editId)) ? (
             <p>Cargando proyectos...</p>
           ) : (
             <div className="project-list">

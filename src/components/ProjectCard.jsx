@@ -32,9 +32,25 @@ export default function ProjectCard({ project, onEdit, onDelete, isOwner }) {
           ))}
         </div>
         {isOwner && (
-          <div className="d-flex justify-content-center gap-2 mt-2">
-            <button className="btn btn-warning btn-sm" onClick={(e) => { e.stopPropagation(); onEdit(project); }}>Editar</button>
-            <button className="btn btn-danger btn-sm" onClick={(e) => { e.stopPropagation(); onDelete(project.id); }}>Eliminar</button>
+          <div className="d-flex justify-content-center mt-2" style={{ gap: '1.2rem', display: 'flex' }}>
+            <button
+              className="bottom-edit d-flex align-items-center justify-content-center gap-2 px-4 py-2"
+              style={{ transition: 'opacity 0.2s, box-shadow 0.2s' }}
+              onClick={(e) => { e.stopPropagation(); onEdit(project); }}
+              onMouseEnter={e => e.currentTarget.style.boxShadow = '0 8px 24px rgba(13,110,253,0.18)'}
+              onMouseLeave={e => e.currentTarget.style.boxShadow = ''}
+            >
+              Editar
+            </button>
+            <button
+              className="bottom-delete d-flex align-items-center justify-content-center gap-2 px-4 py-2"
+              style={{ transition: 'opacity 0.2s, box-shadow 0.2s' }}
+              onClick={(e) => { e.stopPropagation(); onDelete(project.id); }}
+              onMouseEnter={e => e.currentTarget.style.boxShadow = '0 8px 24px rgba(13,110,253,0.18)'}
+              onMouseLeave={e => e.currentTarget.style.boxShadow = ''}
+            >
+              Eliminar
+            </button>
           </div>
         )}
       </div>
