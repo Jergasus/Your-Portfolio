@@ -207,38 +207,116 @@ function App() {
           </div>
           {/* Filtro avanzado con icono */}
           {showFilter && (
-            <div style={{ position: 'absolute', top: 44, left: '50%', transform: 'translateX(-50%)', background: '#23272b', color: '#fff', borderRadius: 16, boxShadow: '0 8px 32px rgba(13,110,253,0.18)', padding: 24, minWidth: 260, zIndex: 10 }}>
-              <div style={{ marginBottom: 16 }}>
-                <label style={{ fontWeight: 700, marginBottom: 6, display: 'block' }}>Estado:</label>
+            <div style={{
+              position: 'fixed', // Cambiado de absolute a fixed
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              background: 'rgba(35,39,43,0.85)',
+              color: '#fff',
+              borderRadius: 22,
+              boxShadow: '0 8px 32px 0 rgba(13,110,253,0.22)',
+              padding: 32,
+              minWidth: 320,
+              zIndex: 2000,
+              backdropFilter: 'blur(8px)',
+              border: '1.5px solid rgba(56,152,241,0.18)',
+              fontFamily: 'inherit',
+              transition: 'all 0.25s',
+              maxWidth: '95vw',
+            }}>
+              <h4 style={{
+                fontWeight: 800,
+                fontSize: '1.3rem',
+                letterSpacing: 1,
+                marginBottom: 18,
+                color: '#6dd5fa', // azul más claro
+                textAlign: 'center',
+                textShadow: '0 0 12px #000' // luminosidad blanca
+              }}>Filtrar Proyectos</h4>
+              <div style={{ marginBottom: 20 }}>
+                <label style={{ fontWeight: 700, marginBottom: 8, display: 'block', color: '#fff', letterSpacing: 0.5 }}>Estado:</label>
                 <select
+                  className="filtro-select"
                   value={filterStatus}
                   onChange={e => setFilterStatus(e.target.value)}
-                  style={{ borderRadius: 8, fontSize: '1.1rem', padding: '0.5rem 1rem', fontWeight: 600, width: '100%' }}
                 >
-                  <option value="">Todos</option>
-                  <option value="En Proceso">En Proceso</option>
-                  <option value="Finalizado">Finalizado</option>
+                  <option value="" style={{color:'#23272b'}}>Todos</option>
+                  <option value="En Proceso" style={{color:'#23272b'}}>En Proceso</option>
+                  <option value="Finalizado" style={{color:'#23272b'}}>Finalizado</option>
                 </select>
               </div>
-              <div style={{ marginBottom: 16 }}>
-                <label style={{ fontWeight: 700, marginBottom: 6, display: 'block' }}>Tecnologías:</label>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              <div style={{ marginBottom: 20 }}>
+                <label style={{ fontWeight: 700, marginBottom: 8, display: 'block', color: '#fff', letterSpacing: 0.5 }}>Tecnologías:</label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
                   {allTechnologies.map(tech => (
-                    <label key={tech} style={{ display: 'flex', alignItems: 'center', gap: 4, background: filterTechs.includes(tech) ? '#3898f1' : '#343434', borderRadius: 8, padding: '4px 10px', cursor: 'pointer', fontWeight: 600 }}>
-                      <input
-                        type="checkbox"
-                        checked={filterTechs.includes(tech)}
-                        onChange={e => setFilterTechs(f => e.target.checked ? [...f, tech] : f.filter(t => t !== tech))}
-                        style={{ accentColor: '#3898f1', marginRight: 4 }}
-                      />
+                    <div
+                      key={tech}
+                      onClick={() => setFilterTechs(f => f.includes(tech) ? f.filter(t => t !== tech) : [...f, tech])}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        background: filterTechs.includes(tech) ? 'linear-gradient(90deg,#3898f1 60%,#6dd5fa 100%)' : 'rgba(52,52,52,0.7)',
+                        color: filterTechs.includes(tech) ? '#fff' : '#e0e0e0',
+                        borderRadius: 10,
+                        padding: '6px 14px',
+                        cursor: 'pointer',
+                        fontWeight: 600,
+                        border: filterTechs.includes(tech) ? '1.5px solid #fff' : '1.5px solid #343434',
+                        boxShadow: filterTechs.includes(tech) ? '0 2px 8px #3898f1' : 'none',
+                        transition: 'all 0.18s',
+                        userSelect: 'none',
+                        position: 'relative',
+                        outline: filterTechs.includes(tech) ? '2px solid #6dd5fa' : 'none',
+                      }}
+                      onMouseEnter={e => {
+                        if (!filterTechs.includes(tech)) {
+                          e.currentTarget.style.background = 'rgba(56,152,241,0.18)';
+                          e.currentTarget.style.color = '#fff';
+                          e.currentTarget.style.boxShadow = '0 0 0 3px #6dd5fa88';
+                          e.currentTarget.style.border = '1.5px solid #6dd5fa';
+                        }
+                      }}
+                      onMouseLeave={e => {
+                        if (!filterTechs.includes(tech)) {
+                          e.currentTarget.style.background = 'rgba(52,52,52,0.7)';
+                          e.currentTarget.style.color = '#e0e0e0';
+                          e.currentTarget.style.boxShadow = 'none';
+                          e.currentTarget.style.border = '1.5px solid #343434';
+                        }
+                      }}
+                    >
                       {tech}
-                    </label>
+                    </div>
                   ))}
                 </div>
               </div>
-              <div className="d-flex justify-content-between" style={{gap: 10}}>
-                <button type="button" className="bottom-google-login" style={{padding: '0.4rem 1.2rem', fontSize: '1rem'}} onClick={() => { setFilterStatus(''); setFilterTechs([]); }}>Limpiar</button>
-                <button type="button" className="bottom-google-login" style={{padding: '0.4rem 1.2rem', fontSize: '1rem'}} onClick={() => setShowFilter(false)}>Cerrar</button>
+              <div className="d-flex justify-content-between" style={{gap: 70, marginTop: 18, justifyContent: 'center', display: 'flex'}}>
+                <button type="button" className="bottom-google-login" style={{
+                  padding: '0.5rem 1.4rem',
+                  fontSize: '1.05rem',
+                  borderRadius: 10,
+                  background: 'linear-gradient(90deg,#fff 60%,#e0e7ff 100%)',
+                  color: '#3898f1',
+                  fontWeight: 700,
+                  border: 'none',
+                  boxShadow: '0 2px 8px rgba(56,152,241,0.10)',
+                  transition: 'all 0.18s',
+                  cursor: 'pointer',
+                }} onClick={() => { setFilterStatus(''); setFilterTechs([]); }}>Limpiar</button>
+                <button type="button" className="bottom-google-login" style={{
+                  padding: '0.5rem 1.4rem',
+                  fontSize: '1.05rem',
+                  borderRadius: 10,
+                  background: 'linear-gradient(90deg,#3898f1 60%,#6dd5fa 100%)',
+                  color: '#fff',
+                  fontWeight: 700,
+                  border: 'none',
+                  boxShadow: '0 2px 8px #3898f1',
+                  transition: 'all 0.18s',
+                  cursor: 'pointer',
+                }} onClick={() => setShowFilter(false)}>Cerrar</button>
               </div>
             </div>
           )}
