@@ -1,6 +1,6 @@
 body {
   font-family: 'Segoe UI', Roboto, sans-serif;
-  background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+  background: linear-gradient(120deg, #e9ecef 0%, #bfc6d1 50%, #6a7891 100%) !important;
   color: #212529;
   margin: 0;
 }

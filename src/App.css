@@ -51,7 +51,7 @@ body {
 }
 
 .main-header {
-  background: linear-gradient(90deg, #23272b 20%, #4a4a4a 100%);
+  background: linear-gradient(90deg, #3898f1 20%, #8f19a1 100%);
   border-radius: 18px;
   box-shadow: 0 6px 32px rgba(35, 39, 43, 0.18);
   position: relative;
@@ -102,15 +102,15 @@ body {
 }
 
 .card {
-  background: linear-gradient(90deg, #198cff 20%, #3fc8f2 100%);
+  background: linear-gradient(120deg, #343434 0%, #020605 100%);
   border-radius: 18px;
-  box-shadow: 0 4px 24px rgba(35,53,84,0.10);
-  border: none !important;
-  outline: none !important;
+  box-shadow: 0 4px 24px rgba(191, 167, 106, 0.18);
+  border: 1.5px solid #a88b3a;  
+  outline-offset: -6px;
   min-height: 270px;
   padding: 2em 1.5em 1.5em 1.5em;
   margin-bottom: 0;
-  transition: box-shadow 0.2s, transform 0.2s, border 0.2s;
+  transition: box-shadow 0.22s, transform 0.18s, border 0.18s, outline 0.18s;
   cursor: pointer;
   position: relative;
   overflow: hidden;
@@ -120,6 +120,48 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  animation: none;
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  font-size: 1.2rem;
+  color: #fff;
+  font-weight: 700;
+  margin-bottom: 0.7rem;
+  text-shadow: 0 0 15px #ffffffcc;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  background: none;
+}
+
+.card-text {
+  color: #ffffff;
+  font-size: 1.08rem;
+  margin-bottom: 1.5rem;
+}
+
+.badge-tech {
+  background: linear-gradient(90deg, #3898f1 20%, #8f19a1 100%);
+  color: #fff;
+  font-size: 1.1rem;
+  margin-right: 6px;
+  padding: 6px 16px;
+  border-radius: 14px;
+  font-weight: 600;
+  display: inline-block;
+  margin-bottom: 6px;
+  letter-spacing: 0.7px;
+  box-shadow: 0 0 15px #ffffff61;;
+  border: 1.2px solid #ffffff;
+}
+
+.card:hover {
+  transform: translateY(-6px) scale(1.025);
+  box-shadow: 0 0 32px 8px #00000055;
+  border: 1.5px solid #fff !important;
+  filter: brightness(1.04) saturate(1.05);
 }
 
 .card-title, .card-text {
@@ -130,34 +172,6 @@ body {
   transform: translateY(-6px) scale(1.03);
   box-shadow: 0 12px 32px rgba(13,110,253,0.18);
   border: 2px solid #ff0000 !important;
-}
-
-.card-title {
-  display: flex;
-  align-items: center;
-  font-size: 1.35rem;
-  color: #0800ff;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-}
-
-.card-text {
-  color: #ffffff;
-  font-size: 1.08rem;
-  margin-bottom: 1.5rem;
-}
-
-.badge-tech {
-  background-color: #23272b;
-  color: #fff;
-  font-size: 1.1rem;
-  margin-right: 6px;
-  padding: 6px 16px;
-  border-radius: 14px;
-  font-weight: 600;
-  display: inline-block;
-  margin-bottom: 6px;
-  letter-spacing: 0.5px;
 }
 
 .btn-github, .btn-linkedin {
@@ -275,7 +289,7 @@ body {
   border: 2px solid transparent !important;
 }
 .project-link:hover, .project-link:focus-visible {
-  border: 2px solid #0d6efd !important;
+  border: 2px solid #fff !important;
   box-shadow: 0 8px 32px rgba(13,110,253,0.18) !important;
   text-decoration: none;
 }
@@ -290,14 +304,16 @@ body {
 
 .featured-title {
   font-size: 2.5rem;
+  font-weight: 800;
   color: #000000; /* Color React, puedes cambiarlo */
   letter-spacing: 1px;
-  text-shadow: 1px 2px 8px rgba(0,0,0,0.08);
   display: inline-block;
   margin-bottom: 1.2rem;
   margin-top: 1.5rem;
-  border-bottom: 4px solid #000000;
-  padding-bottom: 0.2rem;
+  border-bottom: 7px solid #000000;
+  padding-bottom: 0rem;
+  text-transform: uppercase;
+  background: none;
 }
 
 .bottom-google-login {
@@ -379,7 +395,7 @@ body {
   font-weight: 600;
   border-radius: 12px;
   padding: 0.7rem 2.2rem;
-  margin-top: 0.5rem;
+  margin-top: 1rem;
   font-size: 1.08rem;
   gap: 0.5rem;
   box-shadow: 0 4px 16px rgba(73,80,87,0.13);
@@ -400,7 +416,7 @@ body {
   font-weight: 600;
   border-radius: 12px;
   padding: 0.7rem 2.2rem;
-  margin-top: 0.5rem;
+  margin-top: 1rem;
   font-size: 1.08rem;
   gap: 0.5rem;
   box-shadow: 0 4px 16px rgba(73,80,87,0.13);

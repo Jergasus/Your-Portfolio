@@ -7,15 +7,28 @@ import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from
 import { useEffect, useState } from "react";
 import { db } from "./firebase";
 import { collection, addDoc, query, where, getDocs, onSnapshot, doc, deleteDoc, updateDoc } from "firebase/firestore";
+import miFiltro from './assets/filtro.png';
 
 function App() {
   const [user, setUser] = useState(null);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [newProject, setNewProject] = useState({ title: '', description: '', technologies: '', github: '' });
+  const [newProject, setNewProject] = useState({ title: '', description: '', technologies: '', github: '', status: '' });
   const [editId, setEditId] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [editingField, setEditingField] = useState(null);
+  const [filterStatus, setFilterStatus] = useState('');
+  const [showFilter, setShowFilter] = useState(false);
+  // Obtener todas las tecnologías únicas de los proyectos
+  const allTechnologies = Array.from(new Set(projects.flatMap(p => Array.isArray(p.technologies) ? p.technologies : (p.technologies || '').split(',').map(t => t.trim()).filter(Boolean))));
+  const [filterTechs, setFilterTechs] = useState([]);
+
+  // Filtrado de proyectos según el estado y tecnologías seleccionadas
+  const filteredProjects = projects.filter(p => {
+    const statusOk = !filterStatus || p.status === filterStatus;
+    const techsOk = filterTechs.length === 0 || (Array.isArray(p.technologies) ? filterTechs.every(ft => p.technologies.includes(ft)) : false);
+    return statusOk && techsOk;
+  });
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -54,25 +67,23 @@ function App() {
 
   const handleAddProject = async (e) => {
     e.preventDefault();
-    if (!newProject.title || !newProject.description || !newProject.github) return;
-
+    if (!newProject.title || !newProject.description || !newProject.technologies || !newProject.github || !newProject.status) return;
     setShowForm(false);
     setEditId(null);
     setEditingField(null);
-
     setLoading(true);
     try {
       await addDoc(collection(db, "projects"), {
         ...newProject,
         technologies: newProject.technologies.split(",").map(t => t.trim()),
         uid: user.uid,
-        createdAt: new Date()
+        createdAt: new Date(),
+        status: newProject.status || 'Finalizado'
       });
-      setNewProject({ title: '', description: '', technologies: '', github: '' });
+      setNewProject({ title: '', description: '', technologies: '', github: '', status: '' });
       setLoading(false);
     } catch (error) {
       setLoading(false);
-      // Si quieres, aquí puedes mostrar un mensaje de error al usuario
     }
   };
 
@@ -83,7 +94,8 @@ function App() {
       title: project.title,
       description: project.description,
       technologies: project.technologies.join(", "),
-      github: project.github
+      github: project.github,
+      status: project.status || ''
     });
   };
 
@@ -96,6 +108,8 @@ function App() {
   const handleUpdateProject = async (e) => {
     e.preventDefault();
     if (!editId) return;
+    // Validar todos los campos antes de actualizar
+    if (!newProject.title || !newProject.description || !newProject.technologies || !newProject.github || !newProject.status) return;
     setShowForm(false);
     setEditId(null);
     setEditingField(null);
@@ -106,13 +120,13 @@ function App() {
         description: newProject.description,
         technologies: newProject.technologies.split(",").map(t => t.trim()),
         github: newProject.github,
-        uid: user.uid
+        uid: user.uid,
+        status: newProject.status
       });
-      setNewProject({ title: '', description: '', technologies: '', github: '' });
+      setNewProject({ title: '', description: '', technologies: '', github: '', status: '' });
       setLoading(false);
     } catch (error) {
       setLoading(false);
-      // Si quieres, aquí puedes mostrar un mensaje de error al usuario
     }
   };
 
@@ -189,6 +203,52 @@ function App() {
       {user && (
         <section>
           <h2 className="featured-title">Tus Proyectos</h2>
+          {/* Filtro avanzado con icono */}
+          <div className="mb-4 d-flex justify-content-center align-items-center" style={{gap: '1rem', position: 'relative'}}>
+            <button
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, borderRadius: '50%', boxShadow: showFilter ? '0 0 0 3px #3898f1' : 'none' }}
+              onClick={() => setShowFilter(f => !f)}
+              title="Filtrar proyectos"
+            >
+              <img src={miFiltro} alt="Filtrar" width={36} height={36} />
+            </button>
+            {showFilter && (
+              <div style={{ position: 'absolute', top: 44, left: '50%', transform: 'translateX(-50%)', background: '#23272b', color: '#fff', borderRadius: 16, boxShadow: '0 8px 32px rgba(13,110,253,0.18)', padding: 24, minWidth: 260, zIndex: 10 }}>
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ fontWeight: 700, marginBottom: 6, display: 'block' }}>Estado:</label>
+                  <select
+                    value={filterStatus}
+                    onChange={e => setFilterStatus(e.target.value)}
+                    style={{ borderRadius: 8, fontSize: '1.1rem', padding: '0.5rem 1rem', fontWeight: 600, width: '100%' }}
+                  >
+                    <option value="">Todos</option>
+                    <option value="En Proceso">En Proceso</option>
+                    <option value="Finalizado">Finalizado</option>
+                  </select>
+                </div>
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ fontWeight: 700, marginBottom: 6, display: 'block' }}>Tecnologías:</label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {allTechnologies.map(tech => (
+                      <label key={tech} style={{ display: 'flex', alignItems: 'center', gap: 4, background: filterTechs.includes(tech) ? '#3898f1' : '#343434', borderRadius: 8, padding: '4px 10px', cursor: 'pointer', fontWeight: 600 }}>
+                        <input
+                          type="checkbox"
+                          checked={filterTechs.includes(tech)}
+                          onChange={e => setFilterTechs(f => e.target.checked ? [...f, tech] : f.filter(t => t !== tech))}
+                          style={{ accentColor: '#3898f1', marginRight: 4 }}
+                        />
+                        {tech}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div className="d-flex justify-content-between" style={{gap: 10}}>
+                  <button type="button" className="bottom-google-login" style={{padding: '0.4rem 1.2rem', fontSize: '1rem'}} onClick={() => { setFilterStatus(''); setFilterTechs([]); }}>Limpiar</button>
+                  <button type="button" className="bottom-google-login" style={{padding: '0.4rem 1.2rem', fontSize: '1rem'}} onClick={() => setShowFilter(false)}>Cerrar</button>
+                </div>
+              </div>
+            )}
+          </div>
           {/* Modal para agregar/editar proyecto */}
           {(showForm || editId) && (
             <div style={{
@@ -217,25 +277,36 @@ function App() {
                       disabled={showForm && !editId && loading}
                     />
                   ))}
+                  <select
+                    name="status"
+                    value={newProject.status}
+                    onChange={handleInputChange}
+                    style={{ borderRadius: 8, fontSize: '1.1rem', marginBottom: 12, width: '100%', padding: '0.7rem 1.2rem', fontWeight: 600, color: !newProject.status ? '#888' : '#23272b', background: !newProject.status ? '#f8fafc' : 'white' }}
+                    disabled={loading}
+                  >
+                    <option value="" disabled hidden>Estado del proyecto</option>
+                    <option value="Finalizado" style={{ fontWeight: 'bold' }}>Finalizado</option>
+                    <option value="En Proceso" style={{ fontWeight: 'bold' }}>En Proceso</option>
+                  </select>
                   <div className="d-flex w-100 justify-content-center mt-3" style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '2.5rem' }}>
                     <button
                       type="submit"
                       className="bottom-google-login d-flex align-items-center justify-content-center gap-2 px-4 py-2"
-                      disabled={loading || !newProject.title || !newProject.description || !newProject.technologies || !newProject.github}
+                      disabled={loading || !newProject.title || !newProject.description || !newProject.technologies || !newProject.github || !newProject.status}
                       style={{
-                        opacity: (loading || !newProject.title || !newProject.description || !newProject.technologies || !newProject.github) ? 0.5 : 1,
-                        pointerEvents: (loading || !newProject.title || !newProject.description || !newProject.technologies || !newProject.github) ? 'none' : 'auto',
+                        opacity: (loading || !newProject.title || !newProject.description || !newProject.technologies || !newProject.github || !newProject.status) ? 0.5 : 1,
+                        pointerEvents: (loading || !newProject.title || !newProject.description || !newProject.technologies || !newProject.github || !newProject.status) ? 'none' : 'auto',
                         transition: 'opacity 0.2s, box-shadow 0.2s',
                       }}
                       onMouseEnter={e => e.currentTarget.style.boxShadow = '0 8px 24px rgba(13,110,253,0.18)'}
                       onMouseLeave={e => e.currentTarget.style.boxShadow = ''}
                     >
-                      {editId ? 'Actualizar Proyecto' : loading ? 'Agregando...' : 'Agregar Proyecto'}
+                      {editId ? 'Actualizar Proyecto' : 'Agregar Proyecto'}
                     </button>
                     <button
                       type="button"
                       className="bottom-google-login d-flex align-items-center justify-content-center gap-2 px-4 py-2"
-                      onClick={() => { setEditId(null); setShowForm(false); setNewProject({ title: '', description: '', technologies: '', github: '' }); }}
+                      onClick={() => { setEditId(null); setShowForm(false); setNewProject({ title: '', description: '', technologies: '', github: '', status: '' }); }}
                       disabled={loading}
                       style={{ transition: 'opacity 0.2s, box-shadow 0.2s' }}
                       onMouseEnter={e => e.currentTarget.style.boxShadow = '0 8px 24px rgba(13,110,253,0.18)'}
@@ -245,7 +316,7 @@ function App() {
                     </button>
                   </div>
                 </form>
-                <button onClick={() => { setEditId(null); setShowForm(false); setNewProject({ title: '', description: '', technologies: '', github: '' }); }} style={{ position: 'absolute', top: 12, right: 16, background: 'none', border: 'none', color: '#fff', fontSize: 28, cursor: 'pointer', lineHeight: 1 }} title="Cerrar" disabled={loading}>×</button>
+                <button onClick={() => { setEditId(null); setShowForm(false); setNewProject({ title: '', description: '', technologies: '', github: '', status: '' }); }} style={{ position: 'absolute', top: 12, right: 16, background: 'none', border: 'none', color: '#fff', fontSize: 28, cursor: 'pointer', lineHeight: 1 }} title="Cerrar" disabled={loading}>×</button>
               </div>
             </div>
           )}
@@ -256,7 +327,7 @@ function App() {
                 className="bottom-add d-flex align-items-center justify-content-center gap-2 px-4 py-2"
                 onClick={() => {
                   setShowForm(true);
-                  setNewProject({ title: '', description: '', technologies: '', github: '' });
+                  setNewProject({ title: '', description: '', technologies: '', github: '', status: '' });
                   setEditingField(null);
                 }}
               >
@@ -268,7 +339,7 @@ function App() {
             <p>Cargando proyectos...</p>
           ) : (
             <div className="project-list">
-              {projects.map((project) => (
+              {filteredProjects.map((project) => (
                 <ProjectCard
                   key={project.id}
                   project={project}
@@ -277,7 +348,7 @@ function App() {
                   isOwner={user && user.uid === project.uid}
                 />
               ))}
-              {projects.length === 0 && <p>No tienes proyectos aún.</p>}
+              {filteredProjects.length === 0 && <p>No tienes proyectos aún.</p>}
             </div>
           )}
         </section>

@@ -10,9 +10,33 @@ export default function ProjectCard({ project, onEdit, onDelete, isOwner }) {
   return (
     <div
       className="card mb-4 shadow-sm border-0 d-flex flex-column justify-content-between align-items-stretch text-center h-100 project-link"
-      style={{ textDecoration: "none", cursor: 'pointer' }}
+      style={{ textDecoration: "none", cursor: 'pointer', position: 'relative' }}
       onClick={handleCardClick}
     >
+      {/* Badge de estado en la esquina superior izquierda */}
+      <span
+        className="badge-tech"
+        style={{
+          position: 'absolute',
+          top: 18,
+          left: 18,
+          zIndex: 2,
+          background: project.status === 'En Proceso' ? 'linear-gradient(90deg, #f39c12 0%, #e67e22 100%)' : 'linear-gradient(90deg, #27ae60 0%, #2ecc71 100%)',
+          color: '#fff',
+          fontWeight: 700,
+          fontSize: '1rem',
+          padding: '6px 18px',
+          borderRadius: 14,
+          letterSpacing: '0.7px',
+          boxShadow: '0 0 15px #ffffff61',
+          border: '1.2px solid #ffffff',
+          minWidth: 110,
+          textAlign: 'center',
+          textTransform: 'uppercase',
+        }}
+      >
+        {project.status || 'Finalizado'}
+      </span>
       <div className="card-body d-flex flex-column justify-content-between align-items-stretch text-center h-100 p-0 w-100">
         <h5
           className="card-title d-flex align-items-center justify-content-center mb-3 w-100"
