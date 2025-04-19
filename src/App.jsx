@@ -202,53 +202,46 @@ function App() {
       </header>
       {user && (
         <section>
-          <h2 className="featured-title">Tus Proyectos</h2>
+          <div className="d-flex align-items-center justify-content-center mb-4" style={{ gap: '1rem'}}>
+            <h2 className="featured-title mb-0">Proyectos</h2>
+          </div>
           {/* Filtro avanzado con icono */}
-          <div className="mb-4 d-flex justify-content-center align-items-center" style={{gap: '1rem', position: 'relative'}}>
-            <button
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, borderRadius: '50%', boxShadow: showFilter ? '0 0 0 3px #3898f1' : 'none' }}
-              onClick={() => setShowFilter(f => !f)}
-              title="Filtrar proyectos"
-            >
-              <img src={miFiltro} alt="Filtrar" width={36} height={36} />
-            </button>
-            {showFilter && (
-              <div style={{ position: 'absolute', top: 44, left: '50%', transform: 'translateX(-50%)', background: '#23272b', color: '#fff', borderRadius: 16, boxShadow: '0 8px 32px rgba(13,110,253,0.18)', padding: 24, minWidth: 260, zIndex: 10 }}>
-                <div style={{ marginBottom: 16 }}>
-                  <label style={{ fontWeight: 700, marginBottom: 6, display: 'block' }}>Estado:</label>
-                  <select
-                    value={filterStatus}
-                    onChange={e => setFilterStatus(e.target.value)}
-                    style={{ borderRadius: 8, fontSize: '1.1rem', padding: '0.5rem 1rem', fontWeight: 600, width: '100%' }}
-                  >
-                    <option value="">Todos</option>
-                    <option value="En Proceso">En Proceso</option>
-                    <option value="Finalizado">Finalizado</option>
-                  </select>
-                </div>
-                <div style={{ marginBottom: 16 }}>
-                  <label style={{ fontWeight: 700, marginBottom: 6, display: 'block' }}>Tecnologías:</label>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                    {allTechnologies.map(tech => (
-                      <label key={tech} style={{ display: 'flex', alignItems: 'center', gap: 4, background: filterTechs.includes(tech) ? '#3898f1' : '#343434', borderRadius: 8, padding: '4px 10px', cursor: 'pointer', fontWeight: 600 }}>
-                        <input
-                          type="checkbox"
-                          checked={filterTechs.includes(tech)}
-                          onChange={e => setFilterTechs(f => e.target.checked ? [...f, tech] : f.filter(t => t !== tech))}
-                          style={{ accentColor: '#3898f1', marginRight: 4 }}
-                        />
-                        {tech}
-                      </label>
-                    ))}
-                  </div>
-                </div>
-                <div className="d-flex justify-content-between" style={{gap: 10}}>
-                  <button type="button" className="bottom-google-login" style={{padding: '0.4rem 1.2rem', fontSize: '1rem'}} onClick={() => { setFilterStatus(''); setFilterTechs([]); }}>Limpiar</button>
-                  <button type="button" className="bottom-google-login" style={{padding: '0.4rem 1.2rem', fontSize: '1rem'}} onClick={() => setShowFilter(false)}>Cerrar</button>
+          {showFilter && (
+            <div style={{ position: 'absolute', top: 44, left: '50%', transform: 'translateX(-50%)', background: '#23272b', color: '#fff', borderRadius: 16, boxShadow: '0 8px 32px rgba(13,110,253,0.18)', padding: 24, minWidth: 260, zIndex: 10 }}>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ fontWeight: 700, marginBottom: 6, display: 'block' }}>Estado:</label>
+                <select
+                  value={filterStatus}
+                  onChange={e => setFilterStatus(e.target.value)}
+                  style={{ borderRadius: 8, fontSize: '1.1rem', padding: '0.5rem 1rem', fontWeight: 600, width: '100%' }}
+                >
+                  <option value="">Todos</option>
+                  <option value="En Proceso">En Proceso</option>
+                  <option value="Finalizado">Finalizado</option>
+                </select>
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ fontWeight: 700, marginBottom: 6, display: 'block' }}>Tecnologías:</label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {allTechnologies.map(tech => (
+                    <label key={tech} style={{ display: 'flex', alignItems: 'center', gap: 4, background: filterTechs.includes(tech) ? '#3898f1' : '#343434', borderRadius: 8, padding: '4px 10px', cursor: 'pointer', fontWeight: 600 }}>
+                      <input
+                        type="checkbox"
+                        checked={filterTechs.includes(tech)}
+                        onChange={e => setFilterTechs(f => e.target.checked ? [...f, tech] : f.filter(t => t !== tech))}
+                        style={{ accentColor: '#3898f1', marginRight: 4 }}
+                      />
+                      {tech}
+                    </label>
+                  ))}
                 </div>
               </div>
-            )}
-          </div>
+              <div className="d-flex justify-content-between" style={{gap: 10}}>
+                <button type="button" className="bottom-google-login" style={{padding: '0.4rem 1.2rem', fontSize: '1rem'}} onClick={() => { setFilterStatus(''); setFilterTechs([]); }}>Limpiar</button>
+                <button type="button" className="bottom-google-login" style={{padding: '0.4rem 1.2rem', fontSize: '1rem'}} onClick={() => setShowFilter(false)}>Cerrar</button>
+              </div>
+            </div>
+          )}
           {/* Modal para agregar/editar proyecto */}
           {(showForm || editId) && (
             <div style={{

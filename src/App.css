@@ -429,3 +429,14 @@ body {
   transform: translateY(-2px) scale(1.05);
   box-shadow: 0 8px 24px rgba(73,80,87,0.18);
 }
+
+.filtro-btn-custom {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  transition: filter 0.2s, transform 0.2s;
+}
+.filtro-btn-custom:hover {
+  transform: scale(1.12) rotate(-8deg);
+  background: transparent !important;
+}
