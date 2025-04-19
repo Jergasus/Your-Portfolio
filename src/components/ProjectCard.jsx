@@ -29,7 +29,7 @@ export default function ProjectCard({ project, onEdit, onDelete, isOwner }) {
           borderRadius: 14,
           letterSpacing: '0.7px',
           boxShadow: '0 0 15px #ffffff61',
-          border: '1.2px solid #ffffff',
+          border: '2px solid #ffffff',
           minWidth: 110,
           textAlign: 'center',
           textTransform: 'uppercase',
@@ -59,19 +59,13 @@ export default function ProjectCard({ project, onEdit, onDelete, isOwner }) {
           <div className="d-flex justify-content-center mt-2" style={{ gap: '1.2rem', display: 'flex' }}>
             <button
               className="bottom-edit d-flex align-items-center justify-content-center gap-2 px-4 py-2"
-              style={{ transition: 'opacity 0.2s, box-shadow 0.2s' }}
               onClick={(e) => { e.stopPropagation(); onEdit(project); }}
-              onMouseEnter={e => e.currentTarget.style.boxShadow = '0 8px 24px rgba(13,110,253,0.18)'}
-              onMouseLeave={e => e.currentTarget.style.boxShadow = ''}
             >
               Editar
             </button>
             <button
               className="bottom-delete d-flex align-items-center justify-content-center gap-2 px-4 py-2"
-              style={{ transition: 'opacity 0.2s, box-shadow 0.2s' }}
               onClick={(e) => { e.stopPropagation(); onDelete(project.id); }}
-              onMouseEnter={e => e.currentTarget.style.boxShadow = '0 8px 24px rgba(13,110,253,0.18)'}
-              onMouseLeave={e => e.currentTarget.style.boxShadow = ''}
             >
               Eliminar
             </button>

@@ -105,8 +105,6 @@ body {
   background: linear-gradient(120deg, #343434 0%, #020605 100%);
   border-radius: 18px;
   box-shadow: 0 4px 24px rgba(191, 167, 106, 0.18);
-  border: 1.5px solid #a88b3a;  
-  outline-offset: -6px;
   min-height: 270px;
   padding: 2em 1.5em 1.5em 1.5em;
   margin-bottom: 0;
@@ -121,7 +119,7 @@ body {
   align-items: center;
   justify-content: center;
   animation: none;
-}
+  }
 
 .card-title {
   display: flex;
@@ -154,7 +152,7 @@ body {
   margin-bottom: 6px;
   letter-spacing: 0.7px;
   box-shadow: 0 0 15px #ffffff61;;
-  border: 1.2px solid #ffffff;
+  border: 1.5px solid #ffffff;
 }
 
 .card:hover {
@@ -370,7 +368,7 @@ body {
   background: linear-gradient(90deg, #495057 60%, #495057 100%);
   color: #78ea61;
   transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 8px 24px rgba(73,80,87,0.18);
+  box-shadow: 0 0px 20px #78ea61;
 }
 
 .name-google {
@@ -400,7 +398,7 @@ body {
   background: linear-gradient(90deg, #495057 60%, #495057 100%);
   color: #ed482a;
   transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 8px 24px rgba(73,80,87,0.18);
+  box-shadow: 0 0px 20px #ed482a;
 }
 
 .bottom-edit {
@@ -421,7 +419,7 @@ body {
   background: linear-gradient(90deg, #495057 60%, #495057 100%);
   color: #06bee3;
   transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 8px 24px rgba(73,80,87,0.18);
+  box-shadow: 0 0px 20px #06bee3;
 }
 
 .filtro-btn-custom {
