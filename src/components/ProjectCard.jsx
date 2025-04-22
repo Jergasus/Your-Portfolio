@@ -1,11 +1,16 @@
 import React from "react";
 
-export default function ProjectCard({ project, onEdit, onDelete, isOwner }) {
+export default function ProjectCard({ project, onEdit, onDelete, isOwner, language, texts }) {
   const handleCardClick = (e) => {
     // Evita que los botones de editar/eliminar disparen el enlace
     if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
     window.open(project.github, '_blank', 'noopener,noreferrer');
   };
+
+  // Traducción del estado
+  let statusLabel = project.status;
+  if (project.status === 'En Proceso') statusLabel = texts[language].inProgress;
+  if (project.status === 'Finalizado') statusLabel = texts[language].finished;
 
   return (
     <div
@@ -35,7 +40,7 @@ export default function ProjectCard({ project, onEdit, onDelete, isOwner }) {
           textTransform: 'uppercase',
         }}
       >
-        {project.status || 'Finalizado'}
+        {statusLabel || texts[language].finished}
       </span>
       <div className="card-body d-flex flex-column justify-content-between align-items-stretch text-center h-100 p-0 w-100">
         <h5
@@ -61,13 +66,13 @@ export default function ProjectCard({ project, onEdit, onDelete, isOwner }) {
               className="bottom-edit d-flex align-items-center justify-content-center gap-2 px-4 py-2"
               onClick={(e) => { e.stopPropagation(); onEdit(project); }}
             >
-              Editar
+              {texts[language].edit}
             </button>
             <button
               className="bottom-delete d-flex align-items-center justify-content-center gap-2 px-4 py-2"
               onClick={(e) => { e.stopPropagation(); onDelete(project.id); }}
             >
-              Eliminar
+              {texts[language].delete}
             </button>
           </div>
         )}
