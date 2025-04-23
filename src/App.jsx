@@ -22,6 +22,26 @@ function App() {
   // Obtener todas las tecnologías únicas de los proyectos
   const allTechnologies = Array.from(new Set(projects.flatMap(p => Array.isArray(p.technologies) ? p.technologies : (p.technologies || '').split(',').map(t => t.trim()).filter(Boolean))));
   const [filterTechs, setFilterTechs] = useState([]);
+  const [formErrors, setFormErrors] = useState({});
+
+  // Validación avanzada de formularios
+  const validateProject = (project) => {
+    const errors = {};
+    if (!project.title.trim()) errors.title = 'El título es obligatorio.';
+    if (!project.description.trim()) errors.description = 'La descripción es obligatoria.';
+    if (!project.status) errors.status = 'El estado es obligatorio.';
+    // Validar tecnologías
+    const techs = project.technologies.split(',').map(t => t.trim()).filter(Boolean);
+    if (techs.length === 0) errors.technologies = 'Debes ingresar al menos una tecnología.';
+    if (new Set(techs).size !== techs.length) errors.technologies = 'No repitas tecnologías.';
+    // Validar GitHub
+    if (!project.github.trim()) {
+      errors.github = 'El enlace de GitHub es obligatorio.';
+    } else if (!/^https:\/\/(www\.)?github\.com\/.+/.test(project.github.trim())) {
+      errors.github = 'El enlace debe ser una URL válida de GitHub.';
+    }
+    return errors;
+  };
 
   // Filtrado de proyectos según el estado y tecnologías seleccionadas
   const filteredProjects = projects.filter(p => {
@@ -67,7 +87,9 @@ function App() {
 
   const handleAddProject = async (e) => {
     e.preventDefault();
-    if (!newProject.title || !newProject.description || !newProject.technologies || !newProject.github || !newProject.status) return;
+    const errors = validateProject(newProject);
+    setFormErrors(errors);
+    if (Object.keys(errors).length > 0) return;
     setShowForm(false);
     setEditId(null);
     setEditingField(null);
@@ -81,6 +103,7 @@ function App() {
         status: newProject.status || 'Finalizado'
       });
       setNewProject({ title: '', description: '', technologies: '', github: '', status: '' });
+      setFormErrors({});
       setLoading(false);
     } catch (error) {
       setLoading(false);
@@ -100,16 +123,16 @@ function App() {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("¿Seguro que deseas eliminar este proyecto?")) {
-      await deleteDoc(doc(db, "projects", id));
-    }
+    // Elimina directamente sin confirmación
+    await deleteDoc(doc(db, "projects", id));
   };
 
   const handleUpdateProject = async (e) => {
     e.preventDefault();
     if (!editId) return;
-    // Validar todos los campos antes de actualizar
-    if (!newProject.title || !newProject.description || !newProject.technologies || !newProject.github || !newProject.status) return;
+    const errors = validateProject(newProject);
+    setFormErrors(errors);
+    if (Object.keys(errors).length > 0) return;
     setShowForm(false);
     setEditId(null);
     setEditingField(null);
@@ -124,6 +147,7 @@ function App() {
         status: newProject.status
       });
       setNewProject({ title: '', description: '', technologies: '', github: '', status: '' });
+      setFormErrors({});
       setLoading(false);
     } catch (error) {
       setLoading(false);
@@ -203,6 +227,22 @@ function App() {
     }
   };
 
+  // Animación para proyectos agregados/eliminados
+  const [animatedIds, setAnimatedIds] = useState([]);
+  useEffect(() => {
+    // Cuando cambia la lista de proyectos, todos los ids presentes deben tener fade-in
+    setAnimatedIds(projects.map(p => p.id));
+  }, [projects.map(p => p.id).join(",")]);
+
+  // Copiar enlace público
+  const handleCopyPublicLink = () => {
+    if (user) {
+      const url = `${window.location.origin}/public/${user.uid}`;
+      navigator.clipboard.writeText(url);
+      alert('¡Enlace público copiado!');
+    }
+  };
+
   return (
     <div className="container py-4">
       <header className="main-header text-center text-white py-4 mb-5" style={{paddingTop: '0.2rem'}}>
@@ -253,6 +293,16 @@ function App() {
         <section>
           <div className="d-flex align-items-center justify-content-center mb-4" style={{ gap: '1rem'}}>
             <h2 className="featured-title mb-0">{texts[language].projects}</h2>
+            {user && (
+              <button
+                className="bottom-google-login"
+                style={{marginLeft: 24, fontSize: '1.05rem', borderRadius: 10, background: 'linear-gradient(90deg,#3898f1 60%,#6dd5fa 100%)', color: '#fff', fontWeight: 700, border: 'none', boxShadow: '0 2px 8px #3898f1', cursor: 'pointer'}}
+                onClick={handleCopyPublicLink}
+                title="Copiar enlace público"
+              >
+                <i className="bi bi-link-45deg" style={{marginRight: 6}}></i> Enlace público
+              </button>
+            )}
           </div>
           {/* Filtro avanzado con icono */}
           {showFilter && (
@@ -404,37 +454,40 @@ function App() {
                   name="status"
                   value={newProject.status}
                   onChange={handleInputChange}
-                  style={{ marginBottom: 18 }}
+                  style={{ marginBottom: 6 }}
                 >
                   <option value="" disabled hidden>{texts[language].projectStatus}</option>
                   <option value="Finalizado" style={{ fontWeight: 'bold' }}>{texts[language].finished}</option>
                   <option value="En Proceso" style={{ fontWeight: 'bold' }}>{texts[language].inProgress}</option>
                 </select>
+                {formErrors.status && <div style={{color:'#ffb3b3', fontWeight:600, marginBottom:10}}>{formErrors.status}</div>}
                 {/* Después los campos */}
                 {['title', 'description', 'technologies', 'github'].map((field) => (
-                  <EditableButtonInput
-                    key={field}
-                    value={newProject[field]}
-                    onChange={handleInputChange}
-                    name={field}
-                    placeholder={
-                      field === 'title' ? texts[language].title :
-                      field === 'description' ? texts[language].description :
-                      field === 'technologies' ? texts[language].techPlaceholder :
-                      texts[language].github
-                    }
-                    style={{ borderRadius: 10, fontSize: '1.1rem', marginBottom: 14, width: '100%', background: 'rgba(255,255,255,0.10)', border: '1.5px solid #3898f1', color: '#fff' }}
-                    autoFocus={showForm && !editId && field === 'title'}
-                    editingField={editingField}
-                    setEditingField={setEditingField}
-                    disabled={showForm && !editId && loading}
-                  />
+                  <div key={field} style={{width:'100%'}}>
+                    <EditableButtonInput
+                      value={newProject[field]}
+                      onChange={handleInputChange}
+                      name={field}
+                      placeholder={
+                        field === 'title' ? texts[language].title :
+                        field === 'description' ? texts[language].description :
+                        field === 'technologies' ? texts[language].techPlaceholder :
+                        texts[language].github
+                      }
+                      style={{ borderRadius: 10, fontSize: '1.1rem', marginBottom: 4, width: '100%', background: 'rgba(255,255,255,0.10)', border: '1.5px solid #3898f1', color: '#fff' }}
+                      autoFocus={showForm && !editId && field === 'title'}
+                      editingField={editingField}
+                      setEditingField={setEditingField}
+                      disabled={showForm && !editId && loading}
+                    />
+                    {formErrors[field] && <div style={{color:'#ffb3b3', fontWeight:600, marginBottom:10}}>{formErrors[field]}</div>}
+                  </div>
                 ))}
                 <div className="d-flex w-100 justify-content-center mt-3" style={{ gap: 40, marginTop: 18, justifyContent: 'center', display: 'flex' }}>
                   <button
                     type="submit"
                     className="bottom-google-login d-flex align-items-center justify-content-center gap-2 px-4 py-2"
-                    disabled={loading || !newProject.title || !newProject.description || !newProject.technologies || !newProject.github || !newProject.status}
+                    // El botón siempre está activo
                     style={{
                       padding: '0.5rem 1.4rem',
                       fontSize: '1.05rem',
@@ -446,8 +499,6 @@ function App() {
                       boxShadow: '0 2px 8px #3898f1',
                       transition: 'all 0.18s',
                       cursor: 'pointer',
-                      opacity: (loading || !newProject.title || !newProject.description || !newProject.technologies || !newProject.github || !newProject.status) ? 0.5 : 1,
-                      pointerEvents: (loading || !newProject.title || !newProject.description || !newProject.technologies || !newProject.github || !newProject.status) ? 'none' : 'auto',
                     }}
                     onMouseEnter={e => e.currentTarget.style.boxShadow = '0 8px 24px rgba(13,110,253,0.18)'}
                     onMouseLeave={e => e.currentTarget.style.boxShadow = ''}
@@ -506,24 +557,33 @@ function App() {
               <img src={miFiltro} alt="Filtrar" width={36} height={36} />
             </button>
           </div>
-          {(loading && (showForm || editId)) ? (
-            <p>{texts[language].loading}</p>
-          ) : (
-            <div className="project-list">
-              {filteredProjects.map((project) => (
+          {loading && (
+        <div style={{display:'flex',justifyContent:'center',alignItems:'center',height:'120px'}}>
+          <div className="custom-spinner" />
+        </div>
+      )}
+          <div className="project-list animate-fade">
+            {filteredProjects.map((project) => (
+              <div
+                key={project.id}
+                className={`project-anim ${animatedIds.includes(project.id) ? 'fade-in' : 'fade-out'}`}
+                style={{transition: 'all 0.5s'}}
+              >
                 <ProjectCard
-                  key={project.id}
                   project={project}
                   onEdit={handleEdit}
-                  onDelete={handleDelete}
+                  onDelete={async (id) => {
+                    setAnimatedIds(ids => ids.filter(pid => pid !== id));
+                    setTimeout(() => handleDelete(id), 400);
+                  }}
                   isOwner={user && user.uid === project.uid}
                   language={language}
                   texts={texts}
                 />
-              ))}
-              {filteredProjects.length === 0 && <p>{texts[language].noProjects}</p>}
-            </div>
-          )}
+              </div>
+            ))}
+            {filteredProjects.length === 0 && <p>{texts[language].noProjects}</p>}
+          </div>
         </section>
       )}
     </div>
