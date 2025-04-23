@@ -15,10 +15,13 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [newProject, setNewProject] = useState({ title: '', description: '', technologies: '', github: '', status: '' });
   const [editId, setEditId] = useState(null);
+  // Estados para animación de modales
+  const [showFilter, setShowFilter] = useState(false);
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [formModalVisible, setFormModalVisible] = useState(false);
   const [editingField, setEditingField] = useState(null);
   const [filterStatus, setFilterStatus] = useState('');
-  const [showFilter, setShowFilter] = useState(false);
   // Obtener todas las tecnologías únicas de los proyectos
   const allTechnologies = Array.from(new Set(projects.flatMap(p => Array.isArray(p.technologies) ? p.technologies : (p.technologies || '').split(',').map(t => t.trim()).filter(Boolean))));
   const [filterTechs, setFilterTechs] = useState([]);
@@ -230,8 +233,20 @@ function App() {
   // Animación para proyectos agregados/eliminados
   const [animatedIds, setAnimatedIds] = useState([]);
   useEffect(() => {
-    // Cuando cambia la lista de proyectos, todos los ids presentes deben tener fade-in
-    setAnimatedIds(projects.map(p => p.id));
+    // Detecta ids nuevos (proyectos recién agregados)
+    const currentIds = projects.map(p => p.id);
+    const nuevos = currentIds.filter(id => !animatedIds.includes(id));
+    // Si hay nuevos, primero los dejamos fuera (fade-out), luego los agregamos (fade-in)
+    if (nuevos.length > 0) {
+      setAnimatedIds(prev => prev.filter(id => currentIds.includes(id)));
+      setTimeout(() => {
+        setAnimatedIds(currentIds);
+      }, 50); // 50ms para permitir el render fade-out -> fade-in
+    } else {
+      // Si no hay nuevos, simplemente sincroniza (por ejemplo, tras borrar)
+      setAnimatedIds(currentIds);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projects.map(p => p.id).join(",")]);
 
   // Copiar enlace público
@@ -245,7 +260,7 @@ function App() {
 
   return (
     <div className="container py-4">
-      <header className="main-header text-center text-white py-4 mb-5" style={{paddingTop: '0.2rem'}}>
+      <header className="main-header text-center text-white py-4 mb-5" style={{paddingTop: '0.2rem', position: 'relative'}}>
         <div style={{ position: 'absolute', top: 18, right: 32, zIndex: 3000 }}>
           <button
             onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
@@ -266,6 +281,19 @@ function App() {
             {language === 'es' ? 'EN' : 'ES'}
           </button>
         </div>
+        {/* Enlace público en la esquina inferior derecha del header */}
+        {user && (
+          <div style={{ position: 'absolute', bottom: 18, right: 32, zIndex: 3000 }}>
+            <button
+              className="bottom-google-login"
+              style={{ fontSize: '1.05rem', borderRadius: 10, background: 'linear-gradient(90deg,#3898f1 60%,#6dd5fa 100%)', color: '#fff', fontWeight: 700, border: 'none', boxShadow: '0 2px 8px #3898f1', cursor: 'pointer' }}
+              onClick={handleCopyPublicLink}
+              title="Copiar enlace público"
+            >
+              <i className="bi bi-link-45deg" style={{marginRight: 6}}></i> Enlace público
+            </button>
+          </div>
+        )}
         <h1 className="display-4 fw-bold mb-2">Your Portfolio</h1>
         {user ? (
           <>
@@ -293,270 +321,295 @@ function App() {
         <section>
           <div className="d-flex align-items-center justify-content-center mb-4" style={{ gap: '1rem'}}>
             <h2 className="featured-title mb-0">{texts[language].projects}</h2>
-            {user && (
-              <button
-                className="bottom-google-login"
-                style={{marginLeft: 24, fontSize: '1.05rem', borderRadius: 10, background: 'linear-gradient(90deg,#3898f1 60%,#6dd5fa 100%)', color: '#fff', fontWeight: 700, border: 'none', boxShadow: '0 2px 8px #3898f1', cursor: 'pointer'}}
-                onClick={handleCopyPublicLink}
-                title="Copiar enlace público"
-              >
-                <i className="bi bi-link-45deg" style={{marginRight: 6}}></i> Enlace público
-              </button>
-            )}
           </div>
           {/* Filtro avanzado con icono */}
-          {showFilter && (
-            <div style={{
-              position: 'fixed',              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              background: 'rgba(35,39,43,0.85)',
-              color: '#fff',
-              borderRadius: 22,
-              boxShadow: '0 8px 32px 0 rgba(13,110,253,0.22)',
-              padding: 32,
-              minWidth: 320,
-              zIndex: 2000,
-              backdropFilter: 'blur(8px)',
-              border: '1.5px solid rgba(56,152,241,0.18)',
-              fontFamily: 'inherit',
-              transition: 'all 0.25s',
-              maxWidth: '95vw',
-            }}>
-              <button onClick={() => setShowFilter(false)} style={{ position: 'absolute', top: 12, right: 16, background: 'none', border: 'none', color: '#fff', fontSize: 28, cursor: 'pointer', lineHeight: 1, textShadow: '0 0 8px #3898f1' }} title={texts[language].close}>×</button>
-              <h4 style={{
-                fontWeight: 800,
-                fontSize: '1.3rem',
-                letterSpacing: 1,
-                marginBottom: 18,
-                color: '#6dd5fa',                textAlign: 'center',
-                textShadow: '0 0 12px #000'              }}>{texts[language].filterProjects}</h4>
-              <div style={{ marginBottom: 20 }}>
-                <label style={{ fontWeight: 700, marginBottom: 8, display: 'block', color: '#fff', letterSpacing: 0.5 }}>{texts[language].status}</label>
-                <select
-                  className="filtro-select"
-                  value={filterStatus}
-                  onChange={e => setFilterStatus(e.target.value)}
-                >
-                  <option value="" style={{color:'#23272b'}}>{texts[language].all}</option>
-                  <option value="En Proceso" style={{color:'#23272b'}}>{texts[language].inProgress}</option>
-                  <option value="Finalizado" style={{color:'#23272b'}}>{texts[language].finished}</option>
-                </select>
-              </div>
-              <div style={{ marginBottom: 20 }}>
-                <label style={{ fontWeight: 700, marginBottom: 8, display: 'block', color: '#fff', letterSpacing: 0.5 }}>{texts[language].technologies}</label>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-                  {allTechnologies.map(tech => (
-                    <div
-                      key={tech}
-                      onClick={() => setFilterTechs(f => f.includes(tech) ? f.filter(t => t !== tech) : [...f, tech])}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 6,
-                        background: filterTechs.includes(tech) ? 'linear-gradient(90deg,#3898f1 60%,#6dd5fa 100%)' : 'rgba(52,52,52,0.7)',
-                        color: filterTechs.includes(tech) ? '#fff' : '#e0e0e0',
-                        borderRadius: 10,
-                        padding: '6px 14px',
-                        cursor: 'pointer',
-                        fontWeight: 600,
-                        border: filterTechs.includes(tech) ? '1.5px solid #fff' : '1.5px solid #343434',
-                        boxShadow: filterTechs.includes(tech) ? '0 2px 8px #3898f1' : 'none',
-                        transition: 'all 0.18s',
-                        userSelect: 'none',
-                        position: 'relative',
-                        outline: filterTechs.includes(tech) ? '2px solid #6dd5fa' : 'none',
-                      }}
-                      onMouseEnter={e => {
-                        if (!filterTechs.includes(tech)) {
-                          e.currentTarget.style.background = 'rgba(56,152,241,0.18)';
-                          e.currentTarget.style.color = '#fff';
-                          e.currentTarget.style.boxShadow = '0 0 0 3px #6dd5fa88';
-                          e.currentTarget.style.border = '1.5px solid #6dd5fa';
-                        }
-                      }}
-                      onMouseLeave={e => {
-                        if (!filterTechs.includes(tech)) {
-                          e.currentTarget.style.background = 'rgba(52,52,52,0.7)';
-                          e.currentTarget.style.color = '#e0e0e0';
-                          e.currentTarget.style.boxShadow = 'none';
-                          e.currentTarget.style.border = '1.5px solid #343434';
-                        }
-                      }}
-                    >
-                      {tech}
-                    </div>
-                  ))}
+          {filterModalVisible && (
+            <div
+              className={`modal-fade ${showFilter ? 'modal-fade-in' : 'modal-fade-out'}`}
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100vw',
+                height: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 2000,
+                background: 'rgba(35,39,43,0.32)',
+                backdropFilter: 'blur(2px)',
+              }}
+            >
+              <div style={{
+                background: 'rgba(35,39,43,0.85)',
+                color: '#fff',
+                borderRadius: 22,
+                boxShadow: '0 8px 32px 0 rgba(13,110,253,0.22)',
+                padding: 32,
+                minWidth: 480,
+                width: 520,
+                border: '1.5px solid rgba(56,152,241,0.18)',
+                fontFamily: 'inherit',
+                transition: 'all 0.25s',
+                maxWidth: '95vw',
+                position: 'relative',
+              }}>
+                <button onClick={() => setShowFilter(false)} style={{ position: 'absolute', top: 12, right: 16, background: 'none', border: 'none', color: '#fff', fontSize: 28, cursor: 'pointer', lineHeight: 1, textShadow: '0 0 8px #3898f1' }} title={texts[language].close}>×</button>
+                <h4 style={{
+                  fontWeight: 800,
+                  fontSize: '1.5rem', // Cambiado de 1.3rem a 1.5rem para igualar tamaño
+                  letterSpacing: 1,
+                  marginBottom: 18,
+                  color: '#6dd5fa',
+                  textAlign: 'center',
+                  textShadow: '0 0 12px #000'
+                }}>{texts[language].filterProjects}</h4>
+                <div style={{ marginBottom: 20 }}>
+                  <label style={{ fontWeight: 700, marginBottom: 8, display: 'block', color: '#fff', letterSpacing: 0.5 }}>{texts[language].status}</label>
+                  <select
+                    className="filtro-select"
+                    value={filterStatus}
+                    onChange={e => setFilterStatus(e.target.value)}
+                    style={{ marginBottom: 6 }}
+                  >
+                    <option value="" style={{color:'#23272b', fontWeight: 'bold'}}>{texts[language].all}</option>
+                    <option value="Finalizado" style={{ fontWeight: 'bold' }}>{texts[language].finished}</option>
+                    <option value="En Proceso" style={{ fontWeight: 'bold' }}>{texts[language].inProgress}</option>
+                  </select>
                 </div>
-              </div>
-              <div className="d-flex justify-content-between" style={{gap: 70, marginTop: 18, justifyContent: 'center', display: 'flex'}}>
-                <button type="button" className="bottom-google-login" style={{
-                  padding: '0.5rem 1.4rem',
-                  fontSize: '1.05rem',
-                  borderRadius: 10,
-                  background: 'linear-gradient(90deg,#fff 60%,#e0e7ff 100%)',
-                  color: '#3898f1',
-                  fontWeight: 700,
-                  border: 'none',
-                  boxShadow: '0 2px 8px rgba(56,152,241,0.10)',
-                  transition: 'all 0.18s',
-                  cursor: 'pointer',
-                }} onClick={() => { setFilterStatus(''); setFilterTechs([]); }}>{texts[language].clear}</button>
-                <button type="button" className="bottom-google-login" style={{
-                  padding: '0.5rem 1.4rem',
-                  fontSize: '1.05rem',
-                  borderRadius: 10,
-                  background: 'linear-gradient(90deg,#3898f1 60%,#6dd5fa 100%)',
-                  color: '#fff',
-                  fontWeight: 700,
-                  border: 'none',
-                  boxShadow: '0 2px 8px #3898f1',
-                  transition: 'all 0.18s',
-                  cursor: 'pointer',
-                }} onClick={() => setShowFilter(false)}>{texts[language].close}</button>
+                <div style={{ marginBottom: 20 }}>
+                  <label style={{ fontWeight: 700, marginBottom: 8, display: 'block', color: '#fff', letterSpacing: 0.5 }}>{texts[language].technologies}</label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                    {allTechnologies.map(tech => (
+                      <div
+                        key={tech}
+                        onClick={() => setFilterTechs(f => f.includes(tech) ? f.filter(t => t !== tech) : [...f, tech])}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          background: filterTechs.includes(tech) ? 'linear-gradient(90deg,#3898f1 60%,#6dd5fa 100%)' : 'rgba(52,52,52,0.7)',
+                          color: filterTechs.includes(tech) ? '#fff' : '#e0e0e0',
+                          borderRadius: 10,
+                          padding: '6px 14px',
+                          cursor: 'pointer',
+                          fontWeight: 600,
+                          border: filterTechs.includes(tech) ? '1.5px solid #fff' : '1.5px solid #343434',
+                          boxShadow: filterTechs.includes(tech) ? '0 2px 8px #3898f1' : 'none',
+                          transition: 'all 0.18s',
+                          userSelect: 'none',
+                          position: 'relative',
+                          outline: filterTechs.includes(tech) ? '2px solid #6dd5fa' : 'none',
+                        }}
+                        onMouseEnter={e => {
+                          if (!filterTechs.includes(tech)) {
+                            e.currentTarget.style.background = 'rgba(56,152,241,0.18)';
+                            e.currentTarget.style.color = '#fff';
+                            e.currentTarget.style.boxShadow = '0 0 0 3px #6dd5fa88';
+                            e.currentTarget.style.border = '1.5px solid #6dd5fa';
+                          }
+                        }}
+                        onMouseLeave={e => {
+                          if (!filterTechs.includes(tech)) {
+                            e.currentTarget.style.background = 'rgba(52,52,52,0.7)';
+                            e.currentTarget.style.color = '#e0e0e0';
+                            e.currentTarget.style.boxShadow = 'none';
+                            e.currentTarget.style.border = '1.5px solid #343434';
+                          }
+                        }}
+                      >
+                        {tech}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="d-flex justify-content-between" style={{gap: 70, marginTop: 18, justifyContent: 'center', display: 'flex'}}>
+                  <button type="button" className="bottom-google-login" style={{
+                    padding: '0.5rem 1.4rem',
+                    fontSize: '1.05rem',
+                    borderRadius: 10,
+                    background: 'linear-gradient(90deg,#fff 60%,#e0e7ff 100%)',
+                    color: '#3898f1',
+                    fontWeight: 700,
+                    border: 'none',
+                    boxShadow: '0 2px 8px rgba(56,152,241,0.10)',
+                    transition: 'all 0.18s',
+                    cursor: 'pointer',
+                  }} onClick={() => { setFilterStatus(''); setFilterTechs([]); }}>{texts[language].clear}</button>
+                  <button type="button" className="bottom-google-login" style={{
+                    padding: '0.5rem 1.4rem',
+                    fontSize: '1.05rem',
+                    borderRadius: 10,
+                    background: 'linear-gradient(90deg,#3898f1 60%,#6dd5fa 100%)',
+                    color: '#fff',
+                    fontWeight: 700,
+                    border: 'none',
+                    boxShadow: '0 2px 8px #3898f1',
+                    transition: 'all 0.18s',
+                    cursor: 'pointer',
+                  }} onClick={() => setShowFilter(false)}>{texts[language].close}</button>
+                </div>
               </div>
             </div>
           )}
           {/* Modal para agregar/editar proyecto */}
-          {(showForm || editId) && (
-            <div style={{
-              position: 'fixed',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              background: 'rgba(35,39,43,0.85)',
-              color: '#fff',
-              borderRadius: 22,
-              boxShadow: '0 8px 32px 0 rgba(13,110,253,0.22)',
-              padding: 32,
-              minWidth: 480,
-              width: 520,
-              zIndex: 2000,
-              backdropFilter: 'blur(8px)',
-              border: '1.5px solid rgba(56,152,241,0.18)',
-              fontFamily: 'inherit',
-              transition: 'all 0.25s',
-              maxWidth: '95vw',
-            }}>
-              <h3 className="mb-3" style={{
-                color: '#6dd5fa',
-                fontWeight: 800,
-                fontSize: '1.5rem',
-                letterSpacing: 1,
-                marginBottom: 18,
-                textAlign: 'center',
-                textShadow: '0 0 12px #000'
-              }}>{editId ? texts[language].editProject : texts[language].addProject}</h3>
-              <form onSubmit={editId ? handleUpdateProject : handleAddProject} className="d-flex flex-column align-items-center" style={{width: '100%'}}>
-                {/* Primero el estado */}
-                <select
-                  className="filtro-select"
-                  name="status"
-                  value={newProject.status}
-                  onChange={handleInputChange}
-                  style={{ marginBottom: 6 }}
-                >
-                  <option value="" disabled hidden>{texts[language].projectStatus}</option>
-                  <option value="Finalizado" style={{ fontWeight: 'bold' }}>{texts[language].finished}</option>
-                  <option value="En Proceso" style={{ fontWeight: 'bold' }}>{texts[language].inProgress}</option>
-                </select>
-                {formErrors.status && <div style={{color:'#ffb3b3', fontWeight:600, marginBottom:10}}>{formErrors.status}</div>}
-                {/* Después los campos */}
-                {['title', 'description', 'technologies', 'github'].map((field) => (
-                  <div key={field} style={{width:'100%'}}>
-                    <EditableButtonInput
-                      value={newProject[field]}
-                      onChange={handleInputChange}
-                      name={field}
-                      placeholder={
-                        field === 'title' ? texts[language].title :
-                        field === 'description' ? texts[language].description :
-                        field === 'technologies' ? texts[language].techPlaceholder :
-                        texts[language].github
-                      }
-                      style={{ borderRadius: 10, fontSize: '1.1rem', marginBottom: 4, width: '100%', background: 'rgba(255,255,255,0.10)', border: '1.5px solid #3898f1', color: '#fff' }}
-                      autoFocus={showForm && !editId && field === 'title'}
-                      editingField={editingField}
-                      setEditingField={setEditingField}
-                      disabled={showForm && !editId && loading}
-                    />
-                    {formErrors[field] && <div style={{color:'#ffb3b3', fontWeight:600, marginBottom:10}}>{formErrors[field]}</div>}
+          {formModalVisible && (
+            <div
+              className={`modal-fade ${showForm || editId ? 'modal-fade-in' : 'modal-fade-out'}`}
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100vw',
+                height: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 2000,
+                background: 'rgba(35,39,43,0.32)',
+                backdropFilter: 'blur(2px)',
+              }}
+            >
+              <div style={{
+                background: 'rgba(35,39,43,0.85)',
+                color: '#fff',
+                borderRadius: 22,
+                boxShadow: '0 8px 32px 0 rgba(13,110,253,0.22)',
+                padding: 32,
+                minWidth: 480,
+                width: 520,
+                border: '1.5px solid rgba(56,152,241,0.18)',
+                fontFamily: 'inherit',
+                transition: 'all 0.25s',
+                maxWidth: '95vw',
+                position: 'relative',
+              }}>
+                <h3 className="mb-3" style={{
+                  color: '#6dd5fa',
+                  fontWeight: 800,
+                  fontSize: '1.5rem',
+                  letterSpacing: 1,
+                  marginBottom: 18,
+                  textAlign: 'center',
+                  textShadow: '0 0 12px #000'
+                }}>{editId ? texts[language].editProject : texts[language].addProject}</h3>
+                <form onSubmit={editId ? handleUpdateProject : handleAddProject} className="d-flex flex-column align-items-center" style={{width: '100%'}}>
+                  {/* Primero el estado */}
+                  <select
+                    className="filtro-select"
+                    name="status"
+                    value={newProject.status}
+                    onChange={handleInputChange}
+                    style={{ marginBottom: 6 }}
+                  >
+                    <option value="" disabled hidden>{texts[language].projectStatus}</option>
+                    <option value="Finalizado" style={{ fontWeight: 'bold' }}>{texts[language].finished}</option>
+                    <option value="En Proceso" style={{ fontWeight: 'bold' }}>{texts[language].inProgress}</option>
+                  </select>
+                  {formErrors.status && <div style={{color:'#ffb3b3', fontWeight:600, marginBottom:10}}>{formErrors.status}</div>}
+                  {/* Después los campos */}
+                  {['title', 'description', 'technologies', 'github'].map((field) => (
+                    <div key={field} style={{width:'100%'}}>
+                      <EditableButtonInput
+                        value={newProject[field]}
+                        onChange={handleInputChange}
+                        name={field}
+                        placeholder={
+                          field === 'title' ? texts[language].title :
+                          field === 'description' ? texts[language].description :
+                          field === 'technologies' ? texts[language].techPlaceholder :
+                          texts[language].github
+                        }
+                        style={{ borderRadius: 10, fontSize: '1.1rem', marginBottom: 4, width: '100%', background: 'rgba(255,255,255,0.10)', border: '1.5px solid #3898f1', color: '#fff' }}
+                        autoFocus={showForm && !editId && field === 'title'}
+                        editingField={editingField}
+                        setEditingField={setEditingField}
+                        disabled={showForm && !editId && loading}
+                      />
+                      {formErrors[field] && <div style={{color:'#ffb3b3', fontWeight:600, marginBottom:10}}>{formErrors[field]}</div>}
+                    </div>
+                  ))}
+                  <div className="d-flex w-100 justify-content-center mt-3" style={{ gap: 40, marginTop: 18, justifyContent: 'center', display: 'flex' }}>
+                    <button
+                      type="submit"
+                      className="bottom-google-login d-flex align-items-center justify-content-center gap-2 px-4 py-2"
+                      // El botón siempre está activo
+                      style={{
+                        padding: '0.5rem 1.4rem',
+                        fontSize: '1.05rem',
+                        borderRadius: 10,
+                        background: 'linear-gradient(90deg,#3898f1 60%,#6dd5fa 100%)',
+                        color: '#fff',
+                        fontWeight: 700,
+                        border: 'none',
+                        boxShadow: '0 2px 8px #3898f1',
+                        transition: 'all 0.18s',
+                        cursor: 'pointer',
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.boxShadow = '0 8px 24px rgba(13,110,253,0.18)'}
+                      onMouseLeave={e => e.currentTarget.style.boxShadow = ''}
+                    >
+                      {editId ? texts[language].update : texts[language].add}
+                    </button>
+                    <button
+                      type="button"
+                      className="bottom-google-login d-flex align-items-center justify-content-center gap-2 px-4 py-2"
+                      onClick={() => { setEditId(null); setShowForm(false); setNewProject({ title: '', description: '', technologies: '', github: '', status: '' }); }}
+                      style={{
+                        padding: '0.5rem 1.4rem',
+                        fontSize: '1.05rem',
+                        borderRadius: 10,
+                        background: 'linear-gradient(90deg,#fff 60%,#e0e7ff 100%)',
+                        color: '#3898f1',
+                        fontWeight: 700,
+                        border: 'none',
+                        boxShadow: '0 2px 8px rgba(56,152,241,0.10)',
+                        transition: 'all 0.18s',
+                        cursor: 'pointer',
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.boxShadow = '0 8px 24px rgba(13,110,253,0.18)'}
+                      onMouseLeave={e => e.currentTarget.style.boxShadow = ''}
+                    >
+                      {texts[language].cancel}
+                    </button>
                   </div>
-                ))}
-                <div className="d-flex w-100 justify-content-center mt-3" style={{ gap: 40, marginTop: 18, justifyContent: 'center', display: 'flex' }}>
-                  <button
-                    type="submit"
-                    className="bottom-google-login d-flex align-items-center justify-content-center gap-2 px-4 py-2"
-                    // El botón siempre está activo
-                    style={{
-                      padding: '0.5rem 1.4rem',
-                      fontSize: '1.05rem',
-                      borderRadius: 10,
-                      background: 'linear-gradient(90deg,#3898f1 60%,#6dd5fa 100%)',
-                      color: '#fff',
-                      fontWeight: 700,
-                      border: 'none',
-                      boxShadow: '0 2px 8px #3898f1',
-                      transition: 'all 0.18s',
-                      cursor: 'pointer',
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.boxShadow = '0 8px 24px rgba(13,110,253,0.18)'}
-                    onMouseLeave={e => e.currentTarget.style.boxShadow = ''}
-                  >
-                    {editId ? texts[language].update : texts[language].add}
-                  </button>
-                  <button
-                    type="button"
-                    className="bottom-google-login d-flex align-items-center justify-content-center gap-2 px-4 py-2"
-                    onClick={() => { setEditId(null); setShowForm(false); setNewProject({ title: '', description: '', technologies: '', github: '', status: '' }); }}
-                    style={{
-                      padding: '0.5rem 1.4rem',
-                      fontSize: '1.05rem',
-                      borderRadius: 10,
-                      background: 'linear-gradient(90deg,#fff 60%,#e0e7ff 100%)',
-                      color: '#3898f1',
-                      fontWeight: 700,
-                      border: 'none',
-                      boxShadow: '0 2px 8px rgba(56,152,241,0.10)',
-                      transition: 'all 0.18s',
-                      cursor: 'pointer',
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.boxShadow = '0 8px 24px rgba(13,110,253,0.18)'}
-                    onMouseLeave={e => e.currentTarget.style.boxShadow = ''}
-                  >
-                    {texts[language].cancel}
-                  </button>
-                </div>
-              </form>
-              <button onClick={() => { setEditId(null); setShowForm(false); setNewProject({ title: '', description: '', technologies: '', github: '', status: '' }); }} style={{ position: 'absolute', top: 12, right: 16, background: 'none', border: 'none', color: '#fff', fontSize: 28, cursor: 'pointer', lineHeight: 1, textShadow: '0 0 8px #3898f1' }} title={texts[language].close}>×</button>
+                </form>
+                <button onClick={() => { setEditId(null); setShowForm(false); setNewProject({ title: '', description: '', technologies: '', github: '', status: '' }); }} style={{ position: 'absolute', top: 12, right: 16, background: 'none', border: 'none', color: '#fff', fontSize: 28, cursor: 'pointer', lineHeight: 1, textShadow: '0 0 8px #3898f1' }} title={texts[language].close}>×</button>
+              </div>
             </div>
           )}
           {/* Botón para abrir el modal */}
           <div className="d-flex justify-content-center mb-4" style={{ marginLeft: '32rem'}}>
-            <button
-              className="bottom-add d-flex align-items-center justify-content-center gap-2 px-4 py-2"
-              onClick={() => {
-                setShowForm(true);
-                setNewProject({ title: '', description: '', technologies: '', github: '', status: '' });
-                setEditingField(null);
-              }}
-            >
-              {texts[language].addProject}
-            </button>
+          <button
+            className="bottom-add d-flex align-items-center justify-content-center gap-2 px-4 py-2"
+            onClick={() => {
+              setShowForm(true);
+              setFormModalVisible(true); // Asegura que el modal se monte
+              setNewProject({ title: '', description: '', technologies: '', github: '', status: '' });
+              setEditingField(null);
+            }}
+          >
+            {texts[language].addProject}
+          </button>
 
-            <button
-              className="filtro-btn filtro-btn-custom"
-              style={{
-                marginLeft: '29rem',
-                boxShadow: showFilter ? '0 0 0 3px #3898f1' : 'none',
-                background: 'transparent'
-              }}
-              onClick={() => setShowFilter(f => !f)}
-              title={texts[language].filterProjects}
-            >
-              <img src={miFiltro} alt="Filtrar" width={36} height={36} />
-            </button>
-          </div>
+          <button
+            className="filtro-btn filtro-btn-custom"
+            style={{
+              marginLeft: '29rem',
+              boxShadow: showFilter ? '0 0 0 3px #3898f1' : 'none',
+              background: 'transparent'
+            }}
+            onClick={() => {
+              setShowFilter(f => {
+                if (!f) setFilterModalVisible(true); // Asegura que el modal se monte
+                return !f;
+              });
+            }}
+            title={texts[language].filterProjects}
+          >
+            <img src={miFiltro} alt="Filtrar" width={36} height={36} />
+          </button>
+        </div>
           {loading && (
         <div style={{display:'flex',justifyContent:'center',alignItems:'center',height:'120px'}}>
           <div className="custom-spinner" />

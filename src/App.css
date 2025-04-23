@@ -496,3 +496,35 @@ body {
   transform: scale(0.95);
   transition: opacity 0.5s, transform 0.5s;
 }
+
+.modal-fade {
+  opacity: 0;
+  transform: scale(0.97) translateY(30px);
+  pointer-events: none;
+  transition: opacity 0.35s, transform 0.35s;
+}
+.modal-fade-in {
+  opacity: 1 !important;
+  transform: scale(1) translateY(0) !important;
+  pointer-events: auto;
+}
+.modal-fade-out {
+  opacity: 0 !important;
+  transform: scale(0.97) translateY(30px) !important;
+  pointer-events: none;
+}
+
+/* Unifica el tamaño de letra de los modales de filtro y agregar/editar */
+.modal-fade > div {
+  font-size: 1.1rem;
+}
+
+.modal-fade h4 {
+  font-weight: 800;
+  font-size: 1.5rem;
+  letter-spacing: 1px;
+  margin-bottom: 18px;
+  color: #6dd5fa;
+  text-align: center;
+  text-shadow: 0 0 12px #000;
+}
