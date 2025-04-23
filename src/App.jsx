@@ -264,18 +264,7 @@ function App() {
         <div style={{ position: 'absolute', top: 18, right: 32, zIndex: 3000 }}>
           <button
             onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
-            style={{
-              background: 'linear-gradient(90deg,#3898f1 60%,#6dd5fa 100%)',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 8,
-              padding: '6px 18px',
-              fontWeight: 700,
-              fontSize: '1rem',
-              cursor: 'pointer',
-              boxShadow: '0 2px 8px #3898f1',
-              marginBottom: 8
-            }}
+            className="bottom-translate"
             title={language === 'es' ? 'Switch to English' : 'Cambiar a Español'}
           >
             {language === 'es' ? 'EN' : 'ES'}
@@ -285,8 +274,7 @@ function App() {
         {user && (
           <div style={{ position: 'absolute', bottom: 18, right: 32, zIndex: 3000 }}>
             <button
-              className="bottom-google-login"
-              style={{ fontSize: '1.05rem', borderRadius: 10, background: 'linear-gradient(90deg,#3898f1 60%,#6dd5fa 100%)', color: '#fff', fontWeight: 700, border: 'none', boxShadow: '0 2px 8px #3898f1', cursor: 'pointer' }}
+              className="bottom-public-link"
               onClick={handleCopyPublicLink}
               title="Copiar enlace público"
             >
@@ -612,7 +600,7 @@ function App() {
         </div>
           {loading && (
         <div style={{display:'flex',justifyContent:'center',alignItems:'center',height:'120px'}}>
-          <div className="custom-spinner" />
+          <p style={{color:'#3898f1',fontWeight:700}}>{texts[language].loading}</p>
         </div>
       )}
           <div className="project-list animate-fade">

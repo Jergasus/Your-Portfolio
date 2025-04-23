@@ -528,3 +528,46 @@ body {
   text-align: center;
   text-shadow: 0 0 12px #000;
 }
+
+.bottom-public-link {
+  font-size: 1.05rem;
+  border-radius: 10px;
+  background: linear-gradient(90deg,#3898f1 60%,#6dd5fa 100%);
+  color: #fff;
+  font-weight: 700;
+  border: none;
+  box-shadow: 0 2px 8px #3898f1;
+  cursor: pointer;
+  padding: 0.7rem 2.2rem;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.bottom-public-link:hover {
+  background: linear-gradient(90deg,#3898f1 60%,#6dd5fa 100%);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 0px 20px #0da8f6;
+}
+
+.bottom-translate {
+  font-size: 1.05rem;
+  border-radius: 10px;
+  background: linear-gradient(90deg,#3898f1 60%,#6dd5fa 100%);
+  color: #fff;
+  font-weight: 700;
+  border: none;
+  box-shadow: 0 2px 8px #3898f1;
+  cursor: pointer;
+  padding: 0.7rem 2.2rem;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.bottom-translate:hover {
+  background: linear-gradient(90deg,#3898f1 60%,#6dd5fa 100%);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 0px 20px #0da8f6;
+}
+
