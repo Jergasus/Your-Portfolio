@@ -398,6 +398,19 @@ function App() {
                 textShadow: '0 0 12px #000'
               }}>{editId ? texts[language].editProject : texts[language].addProject}</h3>
               <form onSubmit={editId ? handleUpdateProject : handleAddProject} className="d-flex flex-column align-items-center" style={{width: '100%'}}>
+                {/* Primero el estado */}
+                <select
+                  className="filtro-select"
+                  name="status"
+                  value={newProject.status}
+                  onChange={handleInputChange}
+                  style={{ marginBottom: 18 }}
+                >
+                  <option value="" disabled hidden>{texts[language].projectStatus}</option>
+                  <option value="Finalizado" style={{ fontWeight: 'bold' }}>{texts[language].finished}</option>
+                  <option value="En Proceso" style={{ fontWeight: 'bold' }}>{texts[language].inProgress}</option>
+                </select>
+                {/* Después los campos */}
                 {['title', 'description', 'technologies', 'github'].map((field) => (
                   <EditableButtonInput
                     key={field}
@@ -417,16 +430,6 @@ function App() {
                     disabled={showForm && !editId && loading}
                   />
                 ))}
-                <select
-                  className="filtro-select"
-                  name="status"
-                  value={newProject.status}
-                  onChange={handleInputChange}
-                >
-                  <option value="" disabled hidden>{texts[language].projectStatus}</option>
-                  <option value="Finalizado" style={{ fontWeight: 'bold' }}>{texts[language].finished}</option>
-                  <option value="En Proceso" style={{ fontWeight: 'bold' }}>{texts[language].inProgress}</option>
-                </select>
                 <div className="d-flex w-100 justify-content-center mt-3" style={{ gap: 40, marginTop: 18, justifyContent: 'center', display: 'flex' }}>
                   <button
                     type="submit"
