@@ -600,7 +600,7 @@ function App() {
         </div>
           {loading && (
         <div style={{display:'flex',justifyContent:'center',alignItems:'center',height:'120px'}}>
-          <p style={{color:'#3898f1',fontWeight:700}}>{texts[language].loading}</p>
+          {/* Eliminado el texto de Cargando proyectos... */}
         </div>
       )}
           <div className="project-list animate-fade">
