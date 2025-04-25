@@ -308,7 +308,7 @@ body {
 }
 
 .bottom-google-login {
-  background: linear-gradient(120deg, #343434 0%, #020605 100%);
+  background: linear-gradient(120deg, #105f00 0%, #020605 120%);
   color: #fff;
   border: none;
   font-weight: 600;
@@ -322,14 +322,14 @@ body {
 }
 
 .bottom-google-login:hover {
-  background: linear-gradient(120deg, #343434 0%, #020605 100%);
+  background: linear-gradient(120deg, #105f00 0%, #020605 120%);
   color: #ffffff;
   transform: translateY(-2px) scale(1.05);
   box-shadow: 0 0px 20px #fdfdfd;
 }
 
 .bottom-google-logout {
-  background: linear-gradient(120deg, #aaaaaa8e 0%, #000000 100%);
+  background: linear-gradient(120deg, #5f0000 0%, #020605 120%);
   color: #fff;
   border: none;
   font-weight: 600;
@@ -388,7 +388,7 @@ body {
 }
 
 .bottom-google-logout:hover {
-  background: linear-gradient(120deg, #aaaaaa8e 0%, #000000 100%);
+  background: linear-gradient(120deg, #5f0000 0%, #020605 120%);
   color: #ffffff;
   transform: translateY(-2px) scale(1.05);
   box-shadow: 0 0px 20px #fdfdfd;
