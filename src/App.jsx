@@ -520,7 +520,7 @@ function App() {
                   <div className="d-flex w-100 justify-content-center mt-3" style={{ gap: 40, marginTop: 18, justifyContent: 'center', display: 'flex' }}>
                     <button
                       type="submit"
-                      className="bottom-google-login d-flex align-items-center justify-content-center gap-2 px-4 py-2"
+                      className="bottom-google-logout d-flex align-items-center justify-content-center gap-2 px-4 py-2"
                       // El botón siempre está activo
                       style={{
                         padding: '0.5rem 1.4rem',
@@ -530,18 +530,17 @@ function App() {
                         color: '#fff',
                         fontWeight: 700,
                         border: 'none',
-                        boxShadow: '0 2px 8px #3898f1',
                         transition: 'all 0.18s',
                         cursor: 'pointer',
                       }}
-                      onMouseEnter={e => e.currentTarget.style.boxShadow = '0 8px 24px rgba(13,110,253,0.18)'}
+                      onMouseEnter={e => e.currentTarget.style.boxShadow = '0 0px 20px #3898f1'}
                       onMouseLeave={e => e.currentTarget.style.boxShadow = ''}
                     >
                       {editId ? texts[language].update : texts[language].add}
                     </button>
                     <button
                       type="button"
-                      className="bottom-google-login d-flex align-items-center justify-content-center gap-2 px-4 py-2"
+                      className="bottom-google-logout d-flex align-items-center justify-content-center gap-2 px-4 py-2"
                       onClick={() => { setEditId(null); setShowForm(false); setNewProject({ title: '', description: '', technologies: '', github: '', status: '' }); }}
                       style={{
                         padding: '0.5rem 1.4rem',
@@ -551,11 +550,10 @@ function App() {
                         color: '#3898f1',
                         fontWeight: 700,
                         border: 'none',
-                        boxShadow: '0 2px 8px rgba(56,152,241,0.10)',
                         transition: 'all 0.18s',
                         cursor: 'pointer',
                       }}
-                      onMouseEnter={e => e.currentTarget.style.boxShadow = '0 8px 24px rgba(13,110,253,0.18)'}
+                      onMouseEnter={e => e.currentTarget.style.boxShadow = '0 0px 20px #fff'}
                       onMouseLeave={e => e.currentTarget.style.boxShadow = ''}
                     >
                       {texts[language].cancel}

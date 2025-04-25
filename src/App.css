@@ -614,7 +614,6 @@ body {
   color: #f4f6fa;
   font-weight: 700;
   border: none;
-  box-shadow: 0 2px 8px #2563eb;
   cursor: pointer;
   padding: 0.7rem 2.2rem;
   transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.15s;
@@ -626,7 +625,7 @@ body {
   background: linear-gradient(90deg, #1a2233 20%, #1f55c8 100%);
   color: #fff;
   transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 0px 20px #2563eb;
+  box-shadow: 0 0px 20px #ffffff;
 }
 
 .bottom-translate {
@@ -636,7 +635,6 @@ body {
   color: #f4f6fa;
   font-weight: 700;
   border: none;
-  box-shadow: 0 2px 8px #2563eb;
   cursor: pointer;
   padding: 0.7rem 2.2rem;
   transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.15s;
@@ -648,6 +646,6 @@ body {
   background: linear-gradient(90deg, #1a2233 20%, #1f55c8 100%);
   color: #fff;
   transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 0px 20px #2563eb;
+  box-shadow: 0 0px 20px #ffffff;
 }
 
