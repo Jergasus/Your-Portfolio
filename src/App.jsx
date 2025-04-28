@@ -496,8 +496,8 @@ function App() {
                   </select>
                   {formErrors.status && <div style={{color:'#ffb3b3', fontWeight:600, marginBottom:10}}>{formErrors.status}</div>}
                   {/* Después los campos */}
-                  {['title', 'description', 'technologies', 'github'].map((field) => (
-                    <div key={field} style={{width:'100%'}}>
+                  {['title', 'description', 'technologies', 'github'].map((field, idx) => (
+                    <div key={field} style={{width:'100%', marginBottom: idx < 3 ? 18 : 0}}>
                       <EditableButtonInput
                         value={newProject[field]}
                         onChange={handleInputChange}
@@ -508,7 +508,7 @@ function App() {
                           field === 'technologies' ? texts[language].techPlaceholder :
                           texts[language].github
                         }
-                        style={{ borderRadius: 10, fontSize: '1.1rem', marginBottom: 4, width: '100%', background: 'rgba(255,255,255,0.10)', border: '1.5px solid #3898f1', color: '#fff' }}
+                        style={{ borderRadius: 10, fontSize: '1.1rem', width: '100%', background: 'rgba(255,255,255,0.10)', border: '1.5px solid #3898f1', color: '#fff' }}
                         autoFocus={showForm && !editId && field === 'title'}
                         editingField={editingField}
                         setEditingField={setEditingField}
@@ -596,6 +596,12 @@ function App() {
             <img src={miFiltro} alt="Filtrar" width={36} height={36} />
           </button>
         </div>
+          {/* Mensaje de no proyectos justo debajo de los botones */}
+          {filteredProjects.length === 0 && !loading && (
+            <div style={{ textAlign: 'center', marginBottom: '2rem', fontWeight: 600, color: '#000', fontSize: '1.2rem' }}>
+              {texts[language].noProjects}
+            </div>
+          )}
           {loading && (
         <div style={{display:'flex',justifyContent:'center',alignItems:'center',height:'120px'}}>
           {/* Eliminado el texto de Cargando proyectos... */}
@@ -606,8 +612,7 @@ function App() {
               <div
                 key={project.id}
                 className={`project-anim ${animatedIds.includes(project.id) ? 'fade-in' : 'fade-out'}`}
-                style={{transition: 'all 0.5s'}}
-              >
+                style={{transition: 'all 0.5s'}}>
                 <ProjectCard
                   project={project}
                   onEdit={handleEdit}
@@ -621,7 +626,6 @@ function App() {
                 />
               </div>
             ))}
-            {filteredProjects.length === 0 && <p>{texts[language].noProjects}</p>}
           </div>
         </section>
       )}
@@ -670,25 +674,54 @@ function EditableButtonInput({ value, onChange, name, placeholder, style, autoFo
           name={name}
           value={value}
           onChange={onChange}
-          onBlur={handleBlur}
+          onBlur={e => { handleBlur(); e.target.style.border = '2px solid #3898f1'; }}
           placeholder={placeholder}
           style={{
             ...style,
-            background: 'linear-gradient(90deg, #f8fafc 60%, #e0e7ff 100%)',
-            color: '#23272b',
-            border: '2px solid #dadce0',
+            background: '#111',
+            color: '#fff',
+            border: '2px solid #3898f1',
             padding: '0.7rem 1.2rem',
             fontWeight: 600,
             fontSize: '1.15rem',
-            boxShadow: '0 8px 24px rgba(13,110,253,0.18)',
-            transition: 'background 0.18s, box-shadow 0.18s, border 0.18s',
+            boxShadow: 'none',
+            transition: 'border 0.18s',
             outline: 'none',
-            borderRadius: 12,
-            transform: 'translateY(3px) scale(1.05)',
+            borderRadius: 10,
+            width: '100%',
             maxWidth: '100%',
-            width: '90%'
+            minWidth: 0,
+            minHeight: 0,
+            height: '44px',
+            lineHeight: '1.15',
+            transform: 'none',
+            flex: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            boxSizing: 'border-box',
+            textAlign: 'left',
+            fontFamily: 'inherit',
+            letterSpacing: 0,
+            wordSpacing: 0,
+            fontStyle: 'normal',
+            fontVariant: 'normal',
+            fontStretch: 'normal',
+            verticalAlign: 'middle',
+            // Para evitar movimiento: font smoothing y appearance
+            WebkitFontSmoothing: 'antialiased',
+            MozOsxFontSmoothing: 'grayscale',
+            appearance: 'none',
           }}
           tabIndex={0}
+          autoFocus
+          onFocus={e => {
+            e.target.style.border = '2px solid #6dd5fa';
+            if (e.target.value) {
+              e.target.setSelectionRange(0, e.target.value.length);
+            }
+          }}
+          onMouseEnter={e => e.target.style.border = '2px solid #6dd5fa'}
+          onMouseLeave={e => e.target.style.border = '2px solid #3898f1'}
           onKeyDown={e => {
             if (e.key === 'Enter') {
               e.preventDefault();
@@ -703,12 +736,10 @@ function EditableButtonInput({ value, onChange, name, placeholder, style, autoFo
                   }
                 }, 0);
               } else if (name === 'github') {
-                // Si es el último campo, dispara el submit del formulario
                 if (inputRef.current) {
                   let form = inputRef.current.form;
                   if (form) form.requestSubmit();
                 }
-                // El cierre del modal se maneja solo en handleAddProject
               }
             }
           }}
@@ -722,21 +753,43 @@ function EditableButtonInput({ value, onChange, name, placeholder, style, autoFo
             ...style,
             width: '100%',
             justifyContent: 'flex-start',
-            background: 'linear-gradient(90deg, #fff 60%, #e0e7ff 100%)',
-            color: value ? '#23272b' : '#888',
-            border: '2px solid #dadce0',
+            background: '#111',
+            color: value ? '#fff' : '#888',
+            border: '2px solid #3898f1',
             fontWeight: 600,
             textAlign: 'left',
             fontSize: '1.15rem',
-            borderRadius: 12,
-            boxShadow: value ? '0 4px 16px rgba(13,110,253,0.10)' : 'none',
-            transition: 'all 0.2s',
+            borderRadius: 10,
+            boxShadow: 'none',
+            transition: 'border 0.18s',
             position: 'relative',
             overflow: 'hidden',
+            transform: 'none',
+            minWidth: 0,
+            minHeight: 0,
+            height: '44px',
+            lineHeight: '1.15',
+            flex: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            boxSizing: 'border-box',
+            padding: '0.7rem 1.2rem',
+            fontFamily: 'inherit',
+            letterSpacing: 0,
+            wordSpacing: 0,
+            fontStyle: 'normal',
+            fontVariant: 'normal',
+            fontStretch: 'normal',
+            verticalAlign: 'middle',
+            WebkitFontSmoothing: 'antialiased',
+            MozOsxFontSmoothing: 'grayscale',
+            appearance: 'none',
           }}
+          onMouseEnter={e => e.currentTarget.style.border = '2px solid #6dd5fa'}
+          onMouseLeave={e => e.currentTarget.style.border = '2px solid #3898f1'}
           onClick={handleButtonClick}
         >
-          <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', justifyContent: 'flex-start', textAlign: 'left' }}>
             {value || <span style={{ color: '#888' }}>{placeholder}</span>}
           </span>
         </button>
