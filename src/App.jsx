@@ -497,7 +497,7 @@ function App() {
                   {formErrors.status && <div style={{color:'#ffb3b3', fontWeight:600, marginBottom:10}}>{formErrors.status}</div>}
                   {/* Después los campos */}
                   {['title', 'description', 'technologies', 'github'].map((field, idx) => (
-                    <div key={field} style={{width:'100%', marginBottom: idx < 3 ? 18 : 0}}>
+                    <div key={field} className="editable-field-container">
                       <EditableButtonInput
                         value={newProject[field]}
                         onChange={handleInputChange}

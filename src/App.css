@@ -1,3 +1,22 @@
+/* Unifica altura y espaciado de los campos del formulario editable */
+.editable-btn-input,
+.editable-btn-input input[type="text"] {
+  height: 44px !important;
+  padding: 0.7rem 1.2rem !important;
+  margin-bottom: 0 !important;
+  box-sizing: border-box;
+  font-size: 1.15rem;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  transition: none !important;
+}
+
+/* Elimina el salto visual entre campos: el margen entre campos solo lo pone el contenedor */
+.editable-field-container {
+  width: 100%;
+  margin-bottom: 18px;
+}
 #root {
   max-width: 1280px;
   margin: 0 auto;
