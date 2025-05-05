@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { db } from "./firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
+// import { db } from "./firebase";
+// import { collection, query, where, getDocs } from "firebase/firestore";
 import ProjectCard from "./components/ProjectCard";
 import "./App.css";
 
@@ -16,16 +16,20 @@ export default function PublicPortfolio() {
   useEffect(() => {
     async function fetchProjects() {
       setLoading(true);
-      const q = query(collection(db, "projects"), where("uid", "==", uid));
-      const snap = await getDocs(q);
-      const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setProjects(data);
-      setLoading(false);
-      // Obtener el nombre del usuario del primer proyecto (si existe)
-      if (data.length > 0 && data[0].userName) {
-        setUserName(data[0].userName);
-      } else if (data.length > 0 && data[0].uid) {
-        setUserName("Usuario: " + data[0].uid.substring(0, 8));
+      try {
+        const res = await fetch(`http://localhost:4000/projects/${uid}`);
+        const data = await res.json();
+        setProjects(data);
+        setLoading(false);
+        // Obtener el nombre del usuario del primer proyecto (si existe)
+        if (data.length > 0 && data[0].userName) {
+          setUserName(data[0].userName);
+        } else if (data.length > 0 && data[0].uid) {
+          setUserName("Usuario: " + data[0].uid.substring(0, 8));
+        }
+      } catch {
+        setProjects([]);
+        setLoading(false);
       }
     }
     fetchProjects();

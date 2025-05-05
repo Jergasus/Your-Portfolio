@@ -5,8 +5,8 @@ import "./App.css";
 import { auth } from "./firebase";
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import { useEffect, useState } from "react";
-import { db } from "./firebase";
-import { collection, addDoc, query, where, getDocs, onSnapshot, doc, deleteDoc, updateDoc } from "firebase/firestore";
+// import { db } from "./firebase";
+// import { collection, addDoc, query, where, getDocs, onSnapshot, doc, deleteDoc, updateDoc } from "firebase/firestore";
 import miFiltro from './assets/filtro.png';
 
 function App() {
@@ -66,13 +66,13 @@ function App() {
       return;
     }
     setLoading(true);
-    const q = query(collection(db, "projects"), where("uid", "==", user.uid));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const userProjects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setProjects(userProjects);
-      setLoading(false);
-    });
-    return () => unsubscribe();
+    fetch(`http://localhost:4000/projects/${user.uid}`)
+      .then(res => res.json())
+      .then(data => {
+        setProjects(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   }, [user]);
 
   const handleLogin = async () => {
@@ -97,20 +97,20 @@ function App() {
     setEditId(null);
     setEditingField(null);
     setLoading(true);
-    try {
-      await addDoc(collection(db, "projects"), {
-        ...newProject,
-        technologies: newProject.technologies.split(",").map(t => t.trim()),
-        uid: user.uid,
-        createdAt: new Date(),
-        status: newProject.status || 'Finalizado'
-      });
-      setNewProject({ title: '', description: '', technologies: '', github: '', status: '' });
-      setFormErrors({});
-      setLoading(false);
-    } catch (error) {
-      setLoading(false);
-    }
+
+    const projectToAdd = {
+      ...newProject,
+      technologies: newProject.technologies.split(",").map(t => t.trim()),
+      id: Date.now().toString(),
+      uid: user.uid,
+      createdAt: new Date(),
+      status: newProject.status || 'Finalizado'
+    };
+    const updatedProjects = [...projects, projectToAdd];
+    await saveProjects(updatedProjects);
+    setNewProject({ title: '', description: '', technologies: '', github: '', status: '' });
+    setFormErrors({});
+    setLoading(false);
   };
 
 
@@ -126,8 +126,8 @@ function App() {
   };
 
   const handleDelete = async (id) => {
-    // Elimina directamente sin confirmación
-    await deleteDoc(doc(db, "projects", id));
+    const updatedProjects = projects.filter(p => p.id !== id);
+    await saveProjects(updatedProjects);
   };
 
   const handleUpdateProject = async (e) => {
@@ -140,21 +140,23 @@ function App() {
     setEditId(null);
     setEditingField(null);
     setLoading(true);
-    try {
-      await updateDoc(doc(db, "projects", editId), {
-        title: newProject.title,
-        description: newProject.description,
-        technologies: newProject.technologies.split(",").map(t => t.trim()),
-        github: newProject.github,
-        uid: user.uid,
-        status: newProject.status
-      });
-      setNewProject({ title: '', description: '', technologies: '', github: '', status: '' });
-      setFormErrors({});
-      setLoading(false);
-    } catch (error) {
-      setLoading(false);
-    }
+
+    const updatedProjects = projects.map(p =>
+      p.id === editId
+        ? {
+            ...p,
+            title: newProject.title,
+            description: newProject.description,
+            technologies: newProject.technologies.split(",").map(t => t.trim()),
+            github: newProject.github,
+            status: newProject.status,
+          }
+        : p
+    );
+    await saveProjects(updatedProjects);
+    setNewProject({ title: '', description: '', technologies: '', github: '', status: '' });
+    setFormErrors({});
+    setLoading(false);
   };
 
   // Cierra el modal automáticamente cuando se agrega un nuevo proyecto
@@ -256,6 +258,15 @@ function App() {
       navigator.clipboard.writeText(url);
       alert('¡Enlace público copiado!');
     }
+  };
+
+  const saveProjects = async (newProjects) => {
+    await fetch(`http://localhost:4000/projects/${user.uid}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ projects: newProjects }),
+    });
+    setProjects(newProjects);
   };
 
   return (
