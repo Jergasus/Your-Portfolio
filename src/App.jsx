@@ -277,6 +277,8 @@ function App() {
             onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
             className="bottom-translate"
             title={language === 'es' ? 'Switch to English' : 'Cambiar a Español'}
+            disabled={formModalVisible && (showForm || editId)}
+            style={formModalVisible && (showForm || editId) ? { pointerEvents: 'none', opacity: 0.5 } : {}}
           >
             {language === 'es' ? 'EN' : 'ES'}
           </button>
@@ -288,6 +290,8 @@ function App() {
               className="bottom-public-link"
               onClick={handleCopyPublicLink}
               title="Copiar enlace público"
+              disabled={formModalVisible && (showForm || editId)}
+              style={formModalVisible && (showForm || editId) ? { pointerEvents: 'none', opacity: 0.5 } : {}}
             >
               <i className="bi bi-link-45deg" style={{marginRight: 6}}></i> Enlace público
             </button>
@@ -494,18 +498,30 @@ function App() {
                 }}>{editId ? texts[language].editProject : texts[language].addProject}</h3>
                 <form onSubmit={editId ? handleUpdateProject : handleAddProject} className="d-flex flex-column align-items-center" style={{width: '100%'}}>
                   {/* Primero el estado */}
-                  <select
-                    className="filtro-select"
-                    name="status"
-                    value={newProject.status}
-                    onChange={handleInputChange}
-                    style={{ marginBottom: 6 }}
-                  >
-                    <option value="" disabled hidden>{texts[language].projectStatus}</option>
-                    <option value="Finalizado" style={{ fontWeight: 'bold' }}>{texts[language].finished}</option>
-                    <option value="En Proceso" style={{ fontWeight: 'bold' }}>{texts[language].inProgress}</option>
-                  </select>
-                  {formErrors.status && <div style={{color:'#ffb3b3', fontWeight:600, marginBottom:10}}>{formErrors.status}</div>}
+                  <div className="editable-field-container" style={{ width: '100%', marginBottom: 16 }}>
+                    <select
+                      className="filtro-select"
+                      name="status"
+                      value={newProject.status}
+                      onChange={handleInputChange}
+                      style={{
+                        borderRadius: 10,
+                        fontSize: '1.1rem',
+                        width: '100%',
+                        background: 'rgba(255,255,255,0.10)',
+                        border: '1.5px solid #3898f1',
+                        color: '#fff',
+                        padding: '0.7rem 1.2rem',
+                        fontWeight: 600,
+                        marginBottom: 0
+                      }}
+                    >
+                      <option value="" disabled hidden>{texts[language].projectStatus}</option>
+                      <option value="Finalizado" style={{ fontWeight: 'bold' }}>{texts[language].finished}</option>
+                      <option value="En Proceso" style={{ fontWeight: 'bold' }}>{texts[language].inProgress}</option>
+                    </select>
+                    {formErrors.status && <div style={{color:'#ffb3b3', fontWeight:600, marginBottom:10}}>{formErrors.status}</div>}
+                  </div>
                   {/* Después los campos */}
                   {['title', 'description', 'technologies', 'github'].map((field, idx) => (
                     <div key={field} className="editable-field-container">
