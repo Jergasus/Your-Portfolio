@@ -277,8 +277,8 @@ function App() {
             onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
             className="bottom-translate"
             title={language === 'es' ? 'Switch to English' : 'Cambiar a Español'}
-            disabled={formModalVisible && (showForm || editId)}
-            style={formModalVisible && (showForm || editId) ? { pointerEvents: 'none', opacity: 0.5 } : {}}
+            disabled={((formModalVisible && (showForm || editId)) || (filterModalVisible && showFilter))}
+            style={((formModalVisible && (showForm || editId)) || (filterModalVisible && showFilter)) ? { pointerEvents: 'none', opacity: 0.5 } : {}}
           >
             {language === 'es' ? 'EN' : 'ES'}
           </button>
@@ -290,8 +290,8 @@ function App() {
               className="bottom-public-link"
               onClick={handleCopyPublicLink}
               title="Copiar enlace público"
-              disabled={formModalVisible && (showForm || editId)}
-              style={formModalVisible && (showForm || editId) ? { pointerEvents: 'none', opacity: 0.5 } : {}}
+              disabled={((formModalVisible && (showForm || editId)) || (filterModalVisible && showFilter))}
+              style={((formModalVisible && (showForm || editId)) || (filterModalVisible && showFilter)) ? { pointerEvents: 'none', opacity: 0.5 } : {}}
             >
               <i className="bi bi-link-45deg" style={{marginRight: 6}}></i> Enlace público
             </button>
@@ -372,7 +372,11 @@ function App() {
                   <select
                     className="filtro-select"
                     value={filterStatus}
-                    onChange={e => setFilterStatus(e.target.value)}
+                    onChange={e => {
+                      setFilterStatus(e.target.value);
+                      // Forzar el select a perder el hover/focus visual inmediatamente al seleccionar
+                      e.target.blur();
+                    }}
                     style={{ marginBottom: 6 }}
                   >
                     <option value="" style={{color:'#23272b', fontWeight: 'bold'}}>{texts[language].all}</option>
@@ -392,12 +396,12 @@ function App() {
                           alignItems: 'center',
                           gap: 6,
                           background: filterTechs.includes(tech) ? 'linear-gradient(90deg,#3898f1 60%,#6dd5fa 100%)' : 'rgba(52,52,52,0.7)',
-                          color: filterTechs.includes(tech) ? '#fff' : '#e0e0e0',
+                          color: '#fff',
                           borderRadius: 10,
                           padding: '6px 14px',
                           cursor: 'pointer',
                           fontWeight: 600,
-                          border: filterTechs.includes(tech) ? '1.5px solid #fff' : '1.5px solid #343434',
+                          border: filterTechs.includes(tech) ? '1.5px solid #fff' : '1.5px solid #3898f1',
                           boxShadow: filterTechs.includes(tech) ? '0 2px 8px #3898f1' : 'none',
                           transition: 'all 0.18s',
                           userSelect: 'none',
@@ -405,20 +409,22 @@ function App() {
                           outline: filterTechs.includes(tech) ? '2px solid #6dd5fa' : 'none',
                         }}
                         onMouseEnter={e => {
-                          if (!filterTechs.includes(tech)) {
-                            e.currentTarget.style.background = 'rgba(56,152,241,0.18)';
-                            e.currentTarget.style.color = '#fff';
-                            e.currentTarget.style.boxShadow = '0 0 0 3px #6dd5fa88';
-                            e.currentTarget.style.border = '1.5px solid #6dd5fa';
-                          }
+                          e.currentTarget.style.background = filterTechs.includes(tech)
+                            ? 'linear-gradient(90deg,#3898f1 60%,#6dd5fa 100%)'
+                            : 'rgba(56,152,241,0.18)';
+                          e.currentTarget.style.color = '#fff';
+                          e.currentTarget.style.boxShadow = filterTechs.includes(tech)
+                            ? '0 2px 8px #3898f1'
+                            : '0 0 0 3px #6dd5fa88';
                         }}
                         onMouseLeave={e => {
-                          if (!filterTechs.includes(tech)) {
-                            e.currentTarget.style.background = 'rgba(52,52,52,0.7)';
-                            e.currentTarget.style.color = '#e0e0e0';
-                            e.currentTarget.style.boxShadow = 'none';
-                            e.currentTarget.style.border = '1.5px solid #343434';
-                          }
+                          e.currentTarget.style.background = filterTechs.includes(tech)
+                            ? 'linear-gradient(90deg,#3898f1 60%,#6dd5fa 100%)'
+                            : 'rgba(52,52,52,0.7)';
+                          e.currentTarget.style.color = '#fff';
+                          e.currentTarget.style.boxShadow = filterTechs.includes(tech)
+                            ? '0 2px 8px #3898f1'
+                            : 'none';
                         }}
                       >
                         {tech}
