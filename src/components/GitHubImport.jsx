@@ -12,13 +12,12 @@ export default function GitHubImport({ onImport, language, texts, user }) {
   const [repositories, setRepositories] = useState([]);
   const [selectedRepos, setSelectedRepos] = useState([]);
   const [aiGeneratedSummary, setAiGeneratedSummary] = useState(false);
+  const [showRepoSelector, setShowRepoSelector] = useState(false);
   
   // Referencia para mantener track del último usuario buscado
   const lastSearchedUsername = useRef("");
-
   // Textos del componente
-  const componentTexts = {
-    es: {
+  const componentTexts = {    es: {
       title: "Importar desde GitHub",
       description: "Vincula tu cuenta de GitHub para importar automáticamente tus repositorios como proyectos.",
       usernameLabel: "Nombre de usuario de GitHub",
@@ -28,6 +27,8 @@ export default function GitHubImport({ onImport, language, texts, user }) {
       deselectAll: "Deseleccionar todos",
       loading: "Cargando repositorios...",
       error: "Error al cargar los repositorios. Verifica el nombre de usuario.",
+      showReposButton: "Seleccionar repositorios",
+      hideReposButton: "Ocultar repositorios",
       noRepos: "No se encontraron repositorios para este usuario.",
       importSuccess: "Proyectos importados correctamente.",
       repoCount: "repositorios encontrados",
@@ -40,9 +41,10 @@ export default function GitHubImport({ onImport, language, texts, user }) {
       updated: "Actualizado",
       techsUsed: "Tecnologías utilizadas",
       noDescription: "Sin descripción",
-      enterUsername: "Ingresa un nombre de usuario válido"
-    },
-    en: {
+      enterUsername: "Ingresa un nombre de usuario válido",
+      selected: "seleccionados",
+      allSelected: "Todos seleccionados"
+    },    en: {
       title: "Import from GitHub",
       description: "Link your GitHub account to automatically import your repositories as projects.",
       usernameLabel: "GitHub username",
@@ -52,6 +54,8 @@ export default function GitHubImport({ onImport, language, texts, user }) {
       deselectAll: "Deselect all",
       loading: "Loading repositories...",
       error: "Error loading repositories. Verify the username.",
+      showReposButton: "Select repositories",
+      hideReposButton: "Hide repositories",
       noRepos: "No repositories found for this user.",
       importSuccess: "Projects imported successfully.",
       repoCount: "repositories found",
@@ -64,7 +68,9 @@ export default function GitHubImport({ onImport, language, texts, user }) {
       updated: "Updated",
       techsUsed: "Technologies used",
       noDescription: "No description",
-      enterUsername: "Enter a valid username"
+      enterUsername: "Enter a valid username",
+      selected: "selected",
+      allSelected: "All selected"
     }
   };
 
@@ -229,64 +235,232 @@ export default function GitHubImport({ onImport, language, texts, user }) {
         : [...prevSelected, id]
     );
   };
-
   // Seleccionar o deseleccionar todos
   const toggleSelectAll = () => {
     setSelectedRepos(selectedRepos.length === repositories.length 
       ? [] 
       : repositories.map(repo => repo.id));
   };
+  
   // Función eliminada: setTestUsername
-
   return (
-    <div className="github-import-container p-4">
-      <h4 style={{
-        fontWeight: 800,
-        fontSize: '1.5rem',
-        letterSpacing: 1,
-        marginBottom: 18,
-        color: '#6dd5fa',
-        textAlign: 'center',
-        textShadow: '0 0 12px #000'
-      }}>{t.title}</h4>
-
-      <p className="text-center mb-4">{t.description}</p>
+    <div className="github-import-container" style={{
+      overflowY: 'auto',
+      overflowX: 'hidden', // Previene el scroll horizontal
+      maxHeight: 'calc(95vh - 60px)', // Aumentamos el porcentaje de altura para utilizar más espacio
+      display: 'flex',
+      flexDirection: 'column',
+      padding: '5px 0px 20px 0px',
+      borderRadius: '20px',
+      width: '520px', // Mantenemos el ancho específico de 520px como se solicitó
+      margin: '0 auto',
+      position: 'relative', // Asegura que los elementos posicionados se comporten correctamente
+    }}>
+      <div className="d-flex align-items-center justify-content-center" style={{marginTop: '0px', marginBottom: '10px'}}>
+        <i className="bi bi-github me-3" style={{ 
+          fontSize: '2.5rem', 
+          color: '#fff', 
+          textShadow: '0 0 15px #3898f1',
+          animation: 'pulse 2s infinite ease-in-out'
+        }}></i>
+        <h4 style={{
+          fontWeight: 800,
+          fontSize: '1.9rem',
+          letterSpacing: 1.2,
+          marginBottom: 0,
+          color: '#6dd5fa',
+          textAlign: 'center',
+          marginTop: '10px',
+          textShadow: '0 0 18px rgba(0,0,0,0.8)'
+        }}>{t.title}</h4>
+      </div>      <p className="text-center mb-4" style={{ 
+        fontSize: '1.15rem', 
+        maxWidth: '90%', 
+        margin: '0 auto 1.5rem auto', 
+        color: '#e0e0e0',
+        textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+        lineHeight: '1.4',
+        padding: '0 15px'
+      }}>{t.description}</p>
       
-      <div className="mb-4">        <label style={{ fontWeight: 700, marginBottom: 8, display: 'block', color: '#fff', letterSpacing: 0.5 }}>
+      <style jsx="true">{`
+        @keyframes pulse {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+          100% { transform: scale(1); }
+        }
+      `}</style>
+      
+      <style jsx="true">{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        .repo-list::-webkit-scrollbar {
+          width: 8px;
+          height: 8px;
+        }
+        .repo-list::-webkit-scrollbar-track {
+          background: rgba(0,0,0,0.1);
+          border-radius: 4px;
+        }
+        .repo-list::-webkit-scrollbar-thumb {
+          background: rgba(56,152,241,0.5);
+          border-radius: 4px;
+        }
+        .repo-list::-webkit-scrollbar-thumb:hover {
+          background: rgba(56,152,241,0.7);
+        }
+          /* Estilos para el placeholder del input */
+        .form-control::placeholder {
+          color: rgba(109, 213, 250, 0.6);
+          font-style: italic;
+          opacity: 0.7;
+        }
+        
+        /* Eliminar el borde de selección al hacer clic */
+        .form-control:focus {
+          outline: none !important;
+          box-shadow: none !important;
+          border-color: transparent !important;
+        }      `}</style><div className="mb-5" style={{ width: '94%', padding: '0 15px' }}>
+        <label style={{ fontWeight: 700, marginBottom: 12, display: 'block', color: '#fff', letterSpacing: 0.5, fontSize: '1.2rem' }}>
           {t.usernameLabel}
-        </label>
-        <div className="d-flex">
-          <input 
-            type="text" 
-            className="form-control" 
-            value={username} 
-            onChange={e => setUsername(e.target.value)}
-            placeholder="username"
-            onKeyPress={(e) => {
-              if (e.key === 'Enter') {
-                fetchRepositories();
-              }
-            }}
-          />
-          <button 
-            className="btn btn-primary ms-2" 
-            onClick={fetchRepositories}
-            disabled={loading}
-            style={{ minWidth: '150px' }}
-          >
-            {loading ? <i className="bi bi-hourglass-split me-2 spinner"></i> : <i className="bi bi-search me-2"></i>} {loading ? t.loading : t.usernameButton}
-          </button>
-        </div>        <small style={{ color: '#aaa', display: 'block', marginTop: '5px' }}>
-          Introduce el nombre de usuario exacto de GitHub (no la URL ni el nombre completo)
-        </small>
-      </div>
-      
-      {error && (
-        <div className="alert alert-danger" role="alert">
+        </label>        <div 
+          style={{ 
+            background: 'rgba(35,39,43,0.8)',
+            position: 'relative',
+            borderRadius: '12px',
+            marginBottom: '15px',
+            border: '1px solid rgba(56,152,241,0.3)',
+            boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.1)',
+            cursor: 'text',
+            width: '100%',
+            display: 'block'
+          }}
+          onClick={(e) => {
+            // Si el clic no fue en el input, focus en el input
+            if (e.target.tagName.toLowerCase() !== 'input') {
+              e.currentTarget.querySelector('input').focus();
+            }
+          }}
+        >
+          <div style={{ position: 'relative', width: '100%' }}>            <i className="bi bi-at" style={{ 
+              position: 'absolute', 
+              left: '16px', 
+              top: '50%', 
+              transform: 'translateY(-50%)', 
+              color: '#6dd5fa',
+              fontSize: '1.4rem',
+              textShadow: '0 0 5px rgba(56,152,241,0.5)',
+              width: '25px',
+              textAlign: 'center',
+              pointerEvents: 'none' // Evita que el ícono capture clics
+            }}></i>            <input
+              type="text"
+              className="form-control"
+              value={username}
+              onChange={e => setUsername(e.target.value)}
+              placeholder="username"
+              style={{ 
+                height: '54px', 
+                fontSize: '1.2rem', 
+                borderRadius: '12px',
+                background: 'rgba(35,39,43,0.8)',
+                color: '#e0e0e0',
+                border: 'none',
+                width: '90%',
+                paddingLeft: '42px',
+                boxShadow: 'none',
+                transition: 'all 0.3s',
+                outline: 'none'
+              }}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  fetchRepositories();
+                }
+              }}              onFocus={e => {
+                e.target.style.background = 'rgba(35,39,43,0.95)';
+                e.target.style.outline = 'none';
+                e.target.parentElement.parentElement.style.boxShadow = '0 0 0 2px rgba(56,152,241,0.3)';
+              }}
+              onBlur={e => {
+                e.target.style.background = 'rgba(35,39,43,0.8)';
+                e.target.parentElement.parentElement.style.boxShadow = 'inset 0 2px 5px rgba(0,0,0,0.1)';
+              }}
+              onMouseEnter={e => {
+                if (e.target !== document.activeElement) {
+                  e.target.style.background = 'rgba(35,39,43,0.9)';
+                  e.target.parentElement.parentElement.style.boxShadow = 'inset 0 1px 3px rgba(0,0,0,0.1), 0 0 0 1px rgba(56,152,241,0.2)';
+                }
+              }}
+              onMouseLeave={e => {
+                if (e.target !== document.activeElement) {
+                  e.target.style.background = 'rgba(35,39,43,0.8)';
+                  e.target.parentElement.parentElement.style.boxShadow = 'inset 0 2px 5px rgba(0,0,0,0.1)';
+                }
+              }}
+            />
+          </div>
+        </div>        <button 
+          onClick={fetchRepositories}
+          disabled={loading}
+          style={{ 
+            width: '100%',
+            background: 'linear-gradient(90deg,#3898f1 60%,#6dd5fa 100%)',
+            color: '#fff',
+            fontWeight: 700,
+            height: '54px',
+            fontSize: '1.15rem',
+            border: 'none',
+            borderRadius: '12px',
+            boxShadow: '0 0 10px rgba(56,152,241,0.5)',
+            margin: '0 auto',
+            transition: 'all 0.3s',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+          onMouseEnter={e => {
+            if (!loading) {
+              e.currentTarget.style.background = 'linear-gradient(90deg,#4ba3f7 60%,#84ddfb 100%)';
+              e.currentTarget.style.boxShadow = '0 0 20px rgba(56,152,241,0.8)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+            }
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = 'linear-gradient(90deg,#3898f1 60%,#6dd5fa 100%)';
+            e.currentTarget.style.boxShadow = '0 0 10px rgba(56,152,241,0.5)';
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}        >
+          {loading ? 
+            <><i className="bi bi-hourglass-split spinner" style={{animation: 'spin 1.5s linear infinite', marginRight: '20px'}}></i> {t.loading}</> : 
+            <><i className="bi bi-search" style={{marginRight: '5px'}}></i> {t.usernameButton}</>
+          }
+        </button>
+        <small style={{ color: '#aaa', display: 'block', marginTop: '10px', fontSize: '1rem', marginBottom: '10px' }}>
+          {language === 'es' ? 
+            'Introduce el nombre de usuario exacto de GitHub (no la URL ni el nombre completo)' : 
+            'Enter the exact GitHub username (not the URL or full name)'}
+        </small>      </div>      {error && (
+        <div className="alert" role="alert" style={{
+          background: 'rgba(220,53,69,0.2)',
+          color: '#fff',
+          borderRadius: '12px',
+          border: '2px solid rgba(220,53,69,0.5)',
+          padding: '20px',
+          boxShadow: '0 8px 16px rgba(220,53,69,0.25)',
+          marginBottom: '25px',
+          fontSize: '1.05rem',
+          margin: '0 15px'
+        }}>
           <div className="d-flex align-items-center">
-            <i className="bi bi-exclamation-triangle-fill me-2" style={{ fontSize: '1.5rem' }}></i>
+            <i className="bi bi-exclamation-triangle-fill me-3" style={{ fontSize: '2rem', color: '#ff6b6b' }}></i>
             <div>
-              <strong>Error:</strong> {error}
+              <strong style={{color: '#ff8585', fontSize: '1.15rem', display: 'block', marginBottom: '5px'}}>Error:</strong> {error}
               {error.includes('conectar al servidor') && (
                 <div className="mt-2">
                   <p className="mb-1">Posibles soluciones:</p>
@@ -294,105 +468,425 @@ export default function GitHubImport({ onImport, language, texts, user }) {
                     <li>Verifica que el servidor backend esté funcionando en http://localhost:4000</li>
                     <li>Reinicia la aplicación</li>
                     <li>Asegúrate de que no haya un firewall bloqueando la conexión</li>
-                  </ul>
-                  <button 
-                    className="btn btn-sm btn-outline-light" 
+                  </ul>                  <button 
+                    style={{
+                      background: 'linear-gradient(90deg,#3898f1 60%,#6dd5fa 100%)',
+                      color: '#fff',
+                      border: 'none',
+                      padding: '8px 16px',
+                      borderRadius: '8px',
+                      fontSize: '1rem',
+                      fontWeight: '600',
+                      marginTop: '10px',
+                      cursor: 'pointer',
+                      boxShadow: '0 3px 8px rgba(56,152,241,0.3)',
+                      transition: 'all 0.3s'
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = 'linear-gradient(90deg,#4ba3f7 60%,#84ddfb 100%)';
+                      e.currentTarget.style.boxShadow = '0 5px 12px rgba(56,152,241,0.5)';
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = 'linear-gradient(90deg,#3898f1 60%,#6dd5fa 100%)';
+                      e.currentTarget.style.boxShadow = '0 3px 8px rgba(56,152,241,0.3)';
+                      e.currentTarget.style.transform = 'translateY(0)';
+                    }}
                     onClick={() => fetchRepositories()}
                   >
-                    <i className="bi bi-arrow-repeat me-1"></i> Reintentar
+                    <i className="bi bi-arrow-repeat me-2"></i> Reintentar
                   </button>
                 </div>
               )}
             </div>
           </div>
         </div>
-      )}
-
-      {repositories.length > 0 && (
-        <>
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <span>{repositories.length} {t.repoCount}</span>
+      )}      {repositories.length > 0 && (
+        <>          <div className="d-flex justify-content-between align-items-center mb-4" style={{
+              padding: '16px 20px',
+              background: 'rgba(35,39,43,0.8)',
+              borderRadius: '12px',
+              boxShadow: selectedRepos.length > 0 
+                ? '0 4px 12px rgba(0,0,0,0.3), 0 0 20px rgba(56,152,241,0.25)'
+                : '0 4px 12px rgba(0,0,0,0.3)',
+              border: selectedRepos.length > 0 
+                ? '2px solid rgba(56,152,241,0.6)' 
+                : '1.5px solid rgba(56,152,241,0.3)',
+              margin: '0 15px',
+              position: 'relative',
+              transition: 'border 0.3s, box-shadow 0.3s'
+            }}>
+              {selectedRepos.length > 0 && (
+                <div style={{
+                  position: 'absolute',
+                  top: '-10px',
+                  right: selectedRepos.length === repositories.length ? '10px' : 'calc(50% - 50px)',
+                  background: selectedRepos.length === repositories.length 
+                    ? 'linear-gradient(90deg, #ff7e5f 0%, #feb47b 100%)' 
+                    : 'linear-gradient(90deg, #3898f1 60%, #6dd5fa 100%)',
+                  color: '#fff',
+                  padding: '3px 12px',
+                  borderRadius: '10px',
+                  fontSize: '0.9rem',
+                  fontWeight: 'bold',
+                  boxShadow: '0 3px 8px rgba(0,0,0,0.3)',
+                  animation: selectedRepos.length === repositories.length ? 'pulse 1.5s infinite' : 'none',
+                  border: '1px solid rgba(255,255,255,0.3)',
+                  zIndex: 1
+                }}>
+                  {selectedRepos.length === repositories.length 
+                    ? <><i className="bi bi-check2-all"></i> {t.allSelected || 'All selected'}</>
+                    : <><i className="bi bi-check2"></i> {selectedRepos.length} / {repositories.length} {t.selected || 'selected'}</>
+                  }
+                </div>
+              )}
+            <span style={{
+              fontWeight: '600',
+              fontSize: '1.25rem',
+              color: '#6dd5fa',
+              display: 'flex',
+              alignItems: 'center'
+            }}>
+              <i className="bi bi-github" style={{marginRight: '10px', fontSize: '1.35rem'}}></i>
+              {repositories.length} {t.repoCount}
+            </span>
             <div className="d-flex align-items-center">
-              <div className="form-check me-3">
-                <input
-                  type="checkbox"
-                  className="form-check-input"
-                  id="aiSummaryCheck"
-                  checked={aiGeneratedSummary}
-                  onChange={() => setAiGeneratedSummary(!aiGeneratedSummary)}
-                />
-                <label className="form-check-label" htmlFor="aiSummaryCheck" title={t.aiSummaryTooltip}>
-                  <i className="bi bi-robot me-1"></i> {t.aiSummaryLabel}
-                </label>
-              </div>
-              <button 
-                className="btn btn-outline-primary btn-sm" 
-                onClick={toggleSelectAll}
-              >
-                {selectedRepos.length === repositories.length ? t.deselectAll : t.selectAll}
-              </button>
-            </div>
-          </div>
-
-          <div className="repo-list" style={{ maxHeight: '300px', overflowY: 'auto', marginBottom: '20px' }}>
-            {repositories.map(repo => (
-              <div 
-                key={repo.id} 
-                className="repo-item p-3 d-flex"
-                style={{ cursor: 'pointer' }}
-                onClick={() => toggleSelect(repo.id)}
-              >
-                <input 
-                  type="checkbox" 
-                  checked={selectedRepos.includes(repo.id)} 
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    toggleSelect(repo.id);
+              <div className="me-4">
+                <button
+                  onClick={() => setAiGeneratedSummary(!aiGeneratedSummary)}
+                  title={t.aiSummaryTooltip}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: aiGeneratedSummary 
+                      ? 'linear-gradient(90deg, #8E2DE2 0%, #4A00E0 100%)' 
+                      : 'linear-gradient(90deg, #485563 0%, #29323c 100%)',
+                    border: 'none',
+                    padding: '8px 12px',
+                    borderRadius: '10px',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s',
+                    boxShadow: aiGeneratedSummary 
+                      ? '0 3px 10px rgba(142, 45, 226, 0.4)'
+                      : '0 2px 8px rgba(0, 0, 0, 0.3)',
+                    color: '#fff',
+                    fontWeight: '600',
+                    fontSize: '1rem'
                   }}
-                  className="mt-1 me-3"
-                />
+                  onMouseEnter={e => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = aiGeneratedSummary 
+                      ? '0 5px 15px rgba(142, 45, 226, 0.6)'
+                      : '0 4px 12px rgba(0, 0, 0, 0.4)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = aiGeneratedSummary 
+                      ? '0 3px 10px rgba(142, 45, 226, 0.4)'
+                      : '0 2px 8px rgba(0, 0, 0, 0.3)';
+                  }}
+                >
+                  <i className={`bi ${aiGeneratedSummary ? 'bi-robot-fill' : 'bi-robot'}`} 
+                     style={{fontSize: '1.1rem'}}></i>
+                  {t.aiSummaryLabel}
+                  {aiGeneratedSummary && <i className="bi bi-check-circle-fill ms-1" style={{color: '#4dffb8'}}></i>}
+                </button>              </div>
+              <button 
+                onClick={() => setShowRepoSelector(!showRepoSelector)}
+                style={{
+                  marginRight: '10px',
+                  padding: '8px 16px',
+                  background: showRepoSelector
+                    ? 'linear-gradient(90deg, #5f91ff 0%, #7bb5fe 100%)' 
+                    : 'linear-gradient(90deg, #485563 0%, #29323c 100%)',
+                  border: 'none',
+                  borderRadius: '10px',
+                  color: '#fff',
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  boxShadow: '0 3px 10px rgba(0,0,0,0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = showRepoSelector
+                    ? 'linear-gradient(90deg, #6f9fff 0%, #8bc2ff 100%)' 
+                    : 'linear-gradient(90deg, #586573 0%, #393f48 100%)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 5px 15px rgba(0,0,0,0.4)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = showRepoSelector
+                    ? 'linear-gradient(90deg, #5f91ff 0%, #7bb5fe 100%)' 
+                    : 'linear-gradient(90deg, #485563 0%, #29323c 100%)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 3px 10px rgba(0,0,0,0.3)';
+                }}
+              >
+                <i className={`bi ${showRepoSelector ? 'bi-eye-slash' : 'bi-eye'}`} 
+                   style={{fontSize: '1.1rem'}}></i>
+                {showRepoSelector ? t.hideReposButton : t.showReposButton}
+                {showRepoSelector && <i className="bi bi-check-circle-fill ms-1" style={{color: '#4dffb8'}}></i>}
+              </button>
+              <button 
+                onClick={toggleSelectAll}
+                style={{
+                  marginRight: '10px',
+                  padding: '8px 16px',
+                  background: selectedRepos.length === repositories.length 
+                    ? 'linear-gradient(90deg, #ff7e5f 0%, #feb47b 100%)' 
+                    : 'linear-gradient(90deg, #3898f1 60%, #6dd5fa 100%)',
+                  border: 'none',
+                  borderRadius: '10px',
+                  color: '#fff',
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  boxShadow: '0 3px 10px rgba(0,0,0,0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = selectedRepos.length === repositories.length 
+                    ? 'linear-gradient(90deg, #ff926f 0%, #fec48b 100%)' 
+                    : 'linear-gradient(90deg, #4ba3f7 60%, #84ddfb 100%)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 5px 15px rgba(0,0,0,0.4)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = selectedRepos.length === repositories.length 
+                    ? 'linear-gradient(90deg, #ff7e5f 0%, #feb47b 100%)' 
+                    : 'linear-gradient(90deg, #3898f1 60%, #6dd5fa 100%)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 3px 10px rgba(0,0,0,0.3)';
+                }}
+              >
+                <i className={`bi ${selectedRepos.length === repositories.length ? 'bi-square' : 'bi-check-all'}`} 
+                   style={{fontSize: '1.1rem', marginRight: '4px'}}></i>                {selectedRepos.length === repositories.length ? t.deselectAll : t.selectAll}
+              </button>
+            </div>          
+          </div>
+            
+          {/* Resumen de repositorios seleccionados (cuando no se muestra la lista) */}          {!showRepoSelector && selectedRepos.length > 0 && (
+            <div style={{ 
+              padding: '15px',
+              margin: '0 15px 15px 15px',
+              background: 'rgba(56,152,241,0.15)',
+              borderRadius: '10px',
+              border: '1px solid rgba(56,152,241,0.3)',
+              textAlign: 'center'
+            }}>
+              <p style={{ 
+                fontSize: '1.1rem',
+                margin: 0,
+                color: '#fff',
+                fontWeight: '500'
+              }}>
+                <i className="bi bi-check2-circle me-2" style={{ color: '#6dd5fa' }}></i>
+                {selectedRepos.length} {language === 'es' ? 'repositorios seleccionados' : 'repositories selected'}
+              </p>
+            </div>
+          )}
+          
+          {/* Lista de repositorios (solo se muestra cuando showRepoSelector es true) */}
+          {showRepoSelector ? (
+            <div className="repo-list" style={{ 
+              maxHeight: '550px',
+              overflowY: 'auto', 
+              marginBottom: '25px',
+              borderRadius: '14px',
+              border: selectedRepos.length > 0 ? '2px solid rgba(56,152,241,0.6)' : '1.5px solid rgba(56,152,241,0.3)',
+              boxShadow: selectedRepos.length > 0 
+                ? 'inset 0 0 15px rgba(0,0,0,0.25), 0 0 10px rgba(56,152,241,0.2)' 
+                : 'inset 0 0 15px rgba(0,0,0,0.25)',
+              padding: '10px',
+              margin: '0 15px',
+              transition: 'border 0.3s, box-shadow 0.3s'
+            }}>
+              {repositories.map(repo => (
+                <div 
+                  key={repo.id} 
+                  className="repo-item d-flex"
+                  style={{ 
+                    cursor: 'pointer',
+                    borderBottom: '2px solid rgba(56,152,241,0.2)',
+                    transition: 'all 0.3s',
+                    background: selectedRepos.includes(repo.id) ? 'rgba(56,152,241,0.25)' : 'rgba(0,0,0,0.15)',
+                    borderRadius: '10px', // Aumentamos el radio para un aspecto más moderno
+                    margin: '12px 4px', // Aumentamos el margen vertical entre elementos
+                    padding: '18px', // Aumentamos el padding para dar más espacio interno
+                    boxShadow: selectedRepos.includes(repo.id) 
+                      ? '0 4px 12px rgba(56,152,241,0.4)' 
+                      : '0 2px 6px rgba(0,0,0,0.2)', // Añadimos una sombra suave incluso a los no seleccionados
+                    border: selectedRepos.includes(repo.id) ? '2px solid rgba(56,152,241,0.8)' : '2px solid transparent',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}
+                  onClick={() => toggleSelect(repo.id)}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.background = selectedRepos.includes(repo.id) ? 'rgba(56,152,241,0.35)' : 'rgba(255,255,255,0.1)';
+                    e.currentTarget.style.boxShadow = selectedRepos.includes(repo.id) ? '0 5px 15px rgba(56,152,241,0.5)' : '0 3px 10px rgba(0,0,0,0.2)';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.background = selectedRepos.includes(repo.id) ? 'rgba(56,152,241,0.25)' : 'rgba(0,0,0,0.15)';
+                    e.currentTarget.style.boxShadow = selectedRepos.includes(repo.id) ? '0 4px 12px rgba(56,152,241,0.4)' : 'none';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
+                >                <div 
+                  style={{
+                    position: 'relative',
+                    marginRight: '15px',
+                    minWidth: '24px'
+                  }}
+                >
+                  <input 
+                    type="checkbox" 
+                    checked={selectedRepos.includes(repo.id)} 
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      toggleSelect(repo.id);
+                    }}
+                    className="mt-1"
+                    style={{ 
+                      width: '20px', 
+                      height: '20px',
+                      accentColor: '#3898f1',
+                      cursor: 'pointer',
+                      opacity: '0.9',
+                      transform: 'scale(1.2)',
+                      boxShadow: selectedRepos.includes(repo.id) ? '0 0 5px rgba(109,213,250,0.8)' : 'none',
+                      borderRadius: '4px'
+                    }}
+                  />
+                  {selectedRepos.includes(repo.id) && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '-8px',
+                      right: '-8px',
+                      background: '#6dd5fa',
+                      borderRadius: '50%',
+                      padding: '2px',
+                      width: '16px',
+                      height: '16px',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      boxShadow: '0 0 5px rgba(0,0,0,0.3)'
+                    }}>
+                      <i className="bi bi-check" style={{ fontSize: '10px', color: '#212529' }}></i>
+                    </div>
+                  )}
+                </div>
                 <div style={{ flex: 1 }}>
-                  <div className="d-flex justify-content-between align-items-start mb-1">
-                    <strong style={{ fontSize: '1.1rem', color: '#6dd5fa' }}>{repo.name.replace(/-/g, ' ').replace(/_/g, ' ')}</strong>
+                  <div className="d-flex justify-content-between align-items-start mb-2">
+                    <strong style={{ fontSize: '1.25rem', color: '#6dd5fa', textShadow: '0 0 10px rgba(0,0,0,0.7)' }}>{repo.name.replace(/-/g, ' ').replace(/_/g, ' ')}</strong>
                     <div>
-                      <span className="badge bg-dark me-2" title="Stars">
-                        <i className="bi bi-star-fill me-1"></i> {repo.stargazers_count}
+                      <span className="badge me-2" style={{
+                        background: '#212529',
+                        fontSize: '0.9rem',
+                        padding: '5px 8px'
+                      }} title="Stars">
+                        <i className="bi bi-star-fill me-1" style={{color: '#FFD700'}}></i> {repo.stargazers_count}
                       </span>
-                      <span className="badge bg-secondary" title={t.updated}>
+                      <span className="badge" style={{
+                        background: '#6c757d',
+                        fontSize: '0.9rem',
+                        padding: '5px 8px'
+                      }} title={t.updated}>
                         <i className="bi bi-clock-history me-1"></i> {formatDate(repo.updated_at)}
                       </span>
                     </div>
                   </div>
-                  <p className="mb-2 small" style={{ color: '#e0e0e0', fontStyle: repo.description ? 'normal' : 'italic' }}>
+                  <p className="mb-3" style={{ 
+                    color: '#e0e0e0', 
+                    fontStyle: repo.description ? 'normal' : 'italic',
+                    fontSize: '1rem',
+                    lineHeight: '1.4'
+                  }}>
                     {repo.description || t.noDescription}
                   </p>
-                  
-                  {(repo.language || (repo.topics && repo.topics.length > 0)) && (
+                    {(repo.language || (repo.topics && repo.topics.length > 0)) && (
                     <div>
-                      <small style={{ color: '#9e9e9e' }}>{t.techsUsed}:</small>
-                      <div className="tech-tags mt-1">
+                      <small style={{ color: '#9e9e9e', fontSize: '0.95rem', fontWeight: '600' }}>{t.techsUsed}:</small>
+                      <div className="tech-tags mt-2" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                         {repo.language && (
-                          <span className="badge bg-primary me-1">
+                          <span className="badge me-1" style={{ 
+                            background: 'linear-gradient(90deg,#3898f1 60%,#6dd5fa 100%)',
+                            padding: '6px 10px',
+                            fontSize: '0.9rem',
+                            borderRadius: '6px',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                            border: '1px solid rgba(255,255,255,0.25)'
+                          }}>
                             <i className="bi bi-code-slash me-1"></i> {repo.language}
                           </span>
                         )}
                         {repo.topics && repo.topics.map(topic => (
-                          <span key={topic} className="badge bg-info me-1">
+                          <span key={topic} className="badge me-1" style={{ 
+                            background: 'rgba(23,162,184,0.8)',
+                            padding: '6px 10px',
+                            fontSize: '0.9rem',
+                            borderRadius: '6px',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                            border: '1px solid rgba(255,255,255,0.25)'
+                          }}>
                             <i className="bi bi-hash"></i> {topic}
                           </span>
                         ))}
                       </div>
                     </div>
-                  )}
-                </div>
+                  )}                </div>
               </div>
             ))}
           </div>
-          
-          <div className="d-flex justify-content-end gap-2 mt-4">
-            <button 
+          ) : null}
+            {/* Contenedor de botones centrado, sin causar overflow horizontal */}
+          <div style={{
+              marginTop: '30px',
+              marginBottom: '15px',
+              width: '100%',
+              maxWidth: '490px',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center', 
+              gap: '15px',
+              margin: '0 auto'
+            }}>
+            <button
               className="bottom-cancel" 
               onClick={() => onImport(null)}
+              style={{
+                padding: '12px 16px',
+                fontSize: '1.1rem',
+                borderRadius: '12px',
+                background: 'linear-gradient(90deg,#fff 60%,#e0e7ff 100%)',
+                color: '#3898f1',
+                fontWeight: '700',
+                border: 'none',
+                transition: 'all 0.25s ease',
+                boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
+                width: '130px',
+                cursor: 'pointer',
+                textAlign: 'center',
+                overflow: 'hidden'
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = 'linear-gradient(90deg,#fff 50%,#e0e7ff 100%)';
+                e.currentTarget.style.boxShadow = '0 6px 15px rgba(255,255,255,0.3)';
+                e.currentTarget.style.transform = 'translateY(-3px) scale(1.03)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'linear-gradient(90deg,#fff 60%,#e0e7ff 100%)';
+                e.currentTarget.style.boxShadow = '0 4px 10px rgba(0,0,0,0.2)';
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+              }}
             >
               {t.cancel}
             </button>
@@ -400,11 +894,42 @@ export default function GitHubImport({ onImport, language, texts, user }) {
               className="bottom-github-import" 
               onClick={importRepositories}
               disabled={selectedRepos.length === 0}
+              style={{
+                padding: '12px 16px',
+                fontSize: '1.1rem',
+                borderRadius: '12px',
+                background: 'linear-gradient(90deg,#3898f1 60%,#6dd5fa 100%)',
+                color: '#fff',
+                fontWeight: '700',
+                border: 'none',
+                transition: 'all 0.25s ease',
+                boxShadow: '0 4px 12px rgba(56,152,241,0.4)',
+                opacity: selectedRepos.length === 0 ? 0.5 : 1,
+                cursor: selectedRepos.length === 0 ? 'not-allowed' : 'pointer',
+                width: '210px',
+                textAlign: 'center',
+                overflow: 'hidden'
+              }}
+              onMouseEnter={e => {
+                if (selectedRepos.length > 0) {
+                  e.currentTarget.style.background = 'linear-gradient(90deg,#4ba3f7 60%,#84ddfb 100%)';
+                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(56,152,241,0.7)';
+                  e.currentTarget.style.transform = 'translateY(-3px) scale(1.03)';
+                }
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'linear-gradient(90deg,#3898f1 60%,#6dd5fa 100%)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(56,152,241,0.4)';
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+              }}
             >
               <i className="bi bi-github me-2"></i>
               {t.importButton} ({selectedRepos.length})
             </button>
           </div>
+          
+          {/* Añadimos espacio adicional al final para mejorar la apariencia */}
+          <div style={{ height: '20px' }}></div>
         </>
       )}
     </div>

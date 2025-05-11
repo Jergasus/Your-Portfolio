@@ -15,40 +15,52 @@
   ],
   "lfEP1PSBgpceYPgkuqFwUVsAb8t1": [
     {
-      "title": "synthetic promoter designer",
-      "description": "Web application that allows users to design and simulate synthetic gene promoters by selecting transcription factor binding sites (TFBS), sequence motifs, and regulatory elements. The app predicts the strength or activity of the promoter using a machine learning model trained on known promoter datasets",
+      "title": "Your Portfolio",
+      "description": "Build your own portfolio",
       "technologies": [
-        "GitHub"
+        "JavaScript"
       ],
-      "github": "https://github.com/lauraloops/synthetic-promoter-designer",
+      "github": "https://github.com/Jergasus/Your-Portfolio",
       "status": "Finalizado",
-      "id": "1746964377223-978208237",
+      "id": "1746976204093-968319359",
       "uid": "lfEP1PSBgpceYPgkuqFwUVsAb8t1",
-      "createdAt": "2025-05-11T11:52:57.223Z"
+      "createdAt": "2025-05-11T15:10:04.093Z"
     },
     {
-      "title": "Skyscanner",
-      "description": "Hackupc challenge: Skyscanner",
-      "technologies": [
-        "Python"
-      ],
-      "github": "https://github.com/lauraloops/Skyscanner",
-      "status": "Finalizado",
-      "id": "1746964377223-977014451",
-      "uid": "lfEP1PSBgpceYPgkuqFwUVsAb8t1",
-      "createdAt": "2025-05-11T11:52:57.223Z"
-    },
-    {
-      "title": "fibropred",
+      "title": "Unity Game",
       "description": "",
       "technologies": [
-        "GitHub"
+        "ShaderLab"
       ],
-      "github": "https://github.com/lauraloops/fibropred",
+      "github": "https://github.com/Jergasus/Unity_Game",
       "status": "Finalizado",
-      "id": "1746964377223-903707955",
+      "id": "1746976204093-595659505",
       "uid": "lfEP1PSBgpceYPgkuqFwUVsAb8t1",
-      "createdAt": "2025-05-11T11:52:57.223Z"
+      "createdAt": "2025-05-11T15:10:04.093Z"
+    },
+    {
+      "title": "Dataset Analysis and Preprocessing",
+      "description": "",
+      "technologies": [
+        "R"
+      ],
+      "github": "https://github.com/Jergasus/Dataset_Analysis_and_Preprocessing",
+      "status": "Finalizado",
+      "id": "1746976204093-949568098",
+      "uid": "lfEP1PSBgpceYPgkuqFwUVsAb8t1",
+      "createdAt": "2025-05-11T15:10:04.093Z"
+    },
+    {
+      "title": "Artificial Cluster",
+      "description": "",
+      "technologies": [
+        "HTML"
+      ],
+      "github": "https://github.com/Jergasus/Artificial_Cluster",
+      "status": "Finalizado",
+      "id": "1746976204093-621737511",
+      "uid": "lfEP1PSBgpceYPgkuqFwUVsAb8t1",
+      "createdAt": "2025-05-11T15:10:04.093Z"
     }
   ]
 }

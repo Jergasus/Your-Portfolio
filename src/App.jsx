@@ -174,7 +174,6 @@ function App() {
   // Variable para guardar el scrollY fuera del render
   const lastScrollY = React.useRef(0);
   const [language, setLanguage] = useState('es');
-
   const texts = {
     es: {
       welcome: 'Bienvenido,',
@@ -206,7 +205,8 @@ function App() {
       delete: 'Eliminar',
       importFromGitHub: 'Importar desde GitHub',
       githubImportSuccess: 'Proyectos importados correctamente',
-      githubImportError: 'Error al importar proyectos'
+      githubImportError: 'Error al importar proyectos',
+      visitGitHub: 'Visitar GitHub'
     },
     en: {
       welcome: 'Welcome,',
@@ -238,7 +238,8 @@ function App() {
       delete: 'Delete',
       importFromGitHub: 'Import from GitHub',
       githubImportSuccess: 'Projects successfully imported',
-      githubImportError: 'Error importing projects'
+      githubImportError: 'Error importing projects',
+      visitGitHub: 'Visit GitHub'
     }
   };
 
@@ -363,26 +364,66 @@ function App() {
   return (
     <div className="container py-4">
       <header className="main-header text-center text-white py-4 mb-5" style={{paddingTop: '0.2rem', position: 'relative'}}>
-        <div style={{ position: 'absolute', top: 18, right: 32, zIndex: 3000 }}>
-          <button
+        <div style={{ position: 'absolute', top: 18, right: 32, zIndex: 3000 }}>          <button
             onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
             className="bottom-translate"
             title={language === 'es' ? 'Switch to English' : 'Cambiar a Español'}
-            disabled={((formModalVisible && (showForm || editId)) || (filterModalVisible && showFilter))}
-            style={((formModalVisible && (showForm || editId)) || (filterModalVisible && showFilter)) ? { pointerEvents: 'none', opacity: 0.5 } : {}}
+            disabled={((formModalVisible && (showForm || editId)) || (filterModalVisible && showFilter) || (githubModalVisible && showGitHubImport))}
+            style={((formModalVisible && (showForm || editId)) || (filterModalVisible && showFilter) || (githubModalVisible && showGitHubImport)) ? { pointerEvents: 'none', opacity: 0.5 } : {}}
           >
             {language === 'es' ? 'EN' : 'ES'}
           </button>
+        </div>        {/* Icono de GitHub en la esquina inferior izquierda del header */}
+        <div style={{ position: 'absolute', bottom: 18, left: 32, zIndex: 3000 }}>
+            <button
+              onClick={() => {
+                setGithubModalVisible(true);
+                setShowGitHubImport(true);
+              }}              style={{ 
+                background: '#24292e', 
+                border: '2px solid #3898f1', 
+                fontSize: '22px', 
+                color: 'white', 
+                cursor: 'pointer', 
+                width: 45, 
+                height: 45, 
+                borderRadius: '50%', 
+                padding: 0, 
+                margin: 0, 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                boxShadow: '0 2px 10px rgba(56,152,241,0.3)',
+                opacity: ((formModalVisible && (showForm || editId)) || (filterModalVisible && showFilter)) ? 0.5 : 1,
+                pointerEvents: ((formModalVisible && (showForm || editId)) || (filterModalVisible && showFilter)) ? 'none' : 'auto',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={e => {
+                if (!((formModalVisible && (showForm || editId)) || (filterModalVisible && showFilter))) {
+                  e.target.style.transform = 'scale(1.1)';
+                  e.target.style.boxShadow = '0 4px 15px rgba(56,152,241,0.5)';
+                }
+              }}
+              onMouseLeave={e => {
+                e.target.style.transform = 'scale(1)';
+                e.target.style.boxShadow = '0 2px 10px rgba(56,152,241,0.3)';
+              }}
+              className="btn-github"
+              title={texts[language].importFromGitHub}
+              disabled={((formModalVisible && (showForm || editId)) || (filterModalVisible && showFilter))}
+            >
+              <i className="bi bi-github"></i>
+            </button>
         </div>
+        
         {/* Enlace público en la esquina inferior derecha del header */}
         {user && (
-          <div style={{ position: 'absolute', bottom: 18, right: 32, zIndex: 3000 }}>
-            <button
+          <div style={{ position: 'absolute', bottom: 18, right: 32, zIndex: 3000 }}>            <button
               className="bottom-public-link"
               onClick={handleCopyPublicLink}
               title="Copiar enlace público"
-              disabled={((formModalVisible && (showForm || editId)) || (filterModalVisible && showFilter))}
-              style={((formModalVisible && (showForm || editId)) || (filterModalVisible && showFilter)) ? { pointerEvents: 'none', opacity: 0.5 } : {}}
+              disabled={((formModalVisible && (showForm || editId)) || (filterModalVisible && showFilter) || (githubModalVisible && showGitHubImport))}
+              style={((formModalVisible && (showForm || editId)) || (filterModalVisible && showFilter) || (githubModalVisible && showGitHubImport)) ? { pointerEvents: 'none', opacity: 0.5 } : {}}
             >
               <i className="bi bi-link-45deg" style={{marginRight: 6}}></i> Enlace público
             </button>
@@ -413,44 +454,8 @@ function App() {
       </header>
       {user && (
         <section>
-          <div className="d-flex align-items-center justify-content-center mb-4" style={{ gap: '1rem'}}>
-            <h2 className="featured-title mb-0">{texts[language].projects}</h2>
+          <div className="d-flex align-items-center justify-content-center mb-4" style={{ gap: '1rem'}}>            <h2 className="featured-title mb-0">{texts[language].projects}</h2>
             <div className="d-flex" style={{ gap: '0.7rem', zIndex: 100 }}>
-              {/* Botón para abrir el filtro */}
-              <button
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', transition: 'all 0.4s', transform: showFilter ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                onClick={() => {
-                  setFilterModalVisible(true);
-                  setShowFilter(prev => !prev);
-                }}
-                className="bottom-translate-top"
-                title={texts[language].filterProjects}
-              >
-                <img src={miFiltro} alt="Filter" style={{ width: '30px', height: '30px', opacity: 0.6 }} />
-              </button>
-              {/* Botón para agregar nuevo proyecto */}
-              <button
-                onClick={() => {
-                  setFormModalVisible(true);
-                  setShowForm(true);
-                }}
-                style={{ background: 'none', border: 'none', fontSize: '30px', color: '#3898f1', cursor: 'pointer', width: 32, height: 32, padding: 0, margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                className="bottom-translate-top"
-                title={texts[language].addProject}
-              >
-                +
-              </button>              {/* Nuevo botón para importar desde GitHub */}
-              <button
-                onClick={() => {
-                  setGithubModalVisible(true);
-                  setShowGitHubImport(true);
-                }}
-                style={{ background: '#24292e', border: '2px solid white', fontSize: '22px', color: 'white', cursor: 'pointer', width: 38, height: 38, borderRadius: '50%', padding: 0, margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 10px rgba(0,0,0,0.2)' }}
-                className="bottom-translate-top"
-                title={texts[language].importFromGitHub}
-              >
-                <i className="bi bi-github"></i>
-              </button>
             </div>
           </div>
           {/* Filtro avanzado con icono */}
@@ -789,8 +794,7 @@ function App() {
             ))}
           </div>
         </section>
-      )}
-      {/* Modal de importación desde GitHub */}
+      )}      {/* Modal de importación desde GitHub */}
       {githubModalVisible && (
         <div
           className={`modal-fade ${showGitHubImport ? 'modal-fade-in' : 'modal-fade-out'}`}
@@ -804,23 +808,26 @@ function App() {
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 2000,
-            background: 'rgba(35,39,43,0.32)',
-            backdropFilter: 'blur(2px)',
+            background: 'rgba(35,39,43,0.5)',
+            backdropFilter: 'blur(4px)',
           }}
-        >
-          <div style={{
+        >          <div style={{
             background: 'rgba(35,39,43,0.85)',
             color: '#fff',
             borderRadius: 22,
             boxShadow: '0 8px 32px 0 rgba(13,110,253,0.22)',
             padding: 32,
             minWidth: 480,
-            width: 600,
+            width: 520,
             border: '1.5px solid rgba(56,152,241,0.18)',
             fontFamily: 'inherit',
             transition: 'all 0.25s',
             maxWidth: '95vw',
             position: 'relative',
+            maxHeight: '90vh',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
           }}>
             <button 
               onClick={() => setShowGitHubImport(false)} 
@@ -834,7 +841,8 @@ function App() {
                 fontSize: 28, 
                 cursor: 'pointer', 
                 lineHeight: 1, 
-                textShadow: '0 0 8px #3898f1' 
+                textShadow: '0 0 10px #3898f1',
+                zIndex: 10
               }} 
               title={texts[language].close}
             >×</button>
