@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef } from "react";
+import RepoSelectorModal from "./RepoSelectorModal";
 
 // Sistema de caché simple para respuestas de GitHub
 const githubCache = {};
@@ -12,7 +13,7 @@ export default function GitHubImport({ onImport, language, texts, user }) {
   const [repositories, setRepositories] = useState([]);
   const [selectedRepos, setSelectedRepos] = useState([]);
   const [aiGeneratedSummary, setAiGeneratedSummary] = useState(false);
-  const [showRepoSelector, setShowRepoSelector] = useState(false);
+  const [isRepoModalOpen, setIsRepoModalOpen] = useState(false);
   
   // Referencia para mantener track del último usuario buscado
   const lastSearchedUsername = useRef("");
@@ -591,15 +592,12 @@ export default function GitHubImport({ onImport, language, texts, user }) {
                      style={{fontSize: '1.1rem'}}></i>
                   {t.aiSummaryLabel}
                   {aiGeneratedSummary && <i className="bi bi-check-circle-fill ms-1" style={{color: '#4dffb8'}}></i>}
-                </button>              </div>
-              <button 
-                onClick={() => setShowRepoSelector(!showRepoSelector)}
+                </button>              </div>              <button 
+                onClick={() => setIsRepoModalOpen(true)}
                 style={{
                   marginRight: '10px',
                   padding: '8px 16px',
-                  background: showRepoSelector
-                    ? 'linear-gradient(90deg, #5f91ff 0%, #7bb5fe 100%)' 
-                    : 'linear-gradient(90deg, #485563 0%, #29323c 100%)',
+                  background: 'linear-gradient(90deg, #485563 0%, #29323c 100%)',
                   border: 'none',
                   borderRadius: '10px',
                   color: '#fff',
@@ -613,24 +611,18 @@ export default function GitHubImport({ onImport, language, texts, user }) {
                   gap: '6px'
                 }}
                 onMouseEnter={e => {
-                  e.currentTarget.style.background = showRepoSelector
-                    ? 'linear-gradient(90deg, #6f9fff 0%, #8bc2ff 100%)' 
-                    : 'linear-gradient(90deg, #586573 0%, #393f48 100%)';
+                  e.currentTarget.style.background = 'linear-gradient(90deg, #586573 0%, #393f48 100%)';
                   e.currentTarget.style.transform = 'translateY(-2px)';
                   e.currentTarget.style.boxShadow = '0 5px 15px rgba(0,0,0,0.4)';
                 }}
                 onMouseLeave={e => {
-                  e.currentTarget.style.background = showRepoSelector
-                    ? 'linear-gradient(90deg, #5f91ff 0%, #7bb5fe 100%)' 
-                    : 'linear-gradient(90deg, #485563 0%, #29323c 100%)';
+                  e.currentTarget.style.background = 'linear-gradient(90deg, #485563 0%, #29323c 100%)';
                   e.currentTarget.style.transform = 'translateY(0)';
                   e.currentTarget.style.boxShadow = '0 3px 10px rgba(0,0,0,0.3)';
                 }}
               >
-                <i className={`bi ${showRepoSelector ? 'bi-eye-slash' : 'bi-eye'}`} 
-                   style={{fontSize: '1.1rem'}}></i>
-                {showRepoSelector ? t.hideReposButton : t.showReposButton}
-                {showRepoSelector && <i className="bi bi-check-circle-fill ms-1" style={{color: '#4dffb8'}}></i>}
+                <i className="bi bi-list-check" style={{fontSize: '1.1rem'}}></i>
+                {t.showReposButton}
               </button>
               <button 
                 onClick={toggleSelectAll}
@@ -673,7 +665,7 @@ export default function GitHubImport({ onImport, language, texts, user }) {
             </div>          
           </div>
             
-          {/* Resumen de repositorios seleccionados (cuando no se muestra la lista) */}          {!showRepoSelector && selectedRepos.length > 0 && (
+          {/* Resumen de repositorios seleccionados (cuando no se muestra la lista) */}          {selectedRepos.length > 0 && (
             <div style={{ 
               padding: '15px',
               margin: '0 15px 15px 15px',
@@ -691,163 +683,98 @@ export default function GitHubImport({ onImport, language, texts, user }) {
                 <i className="bi bi-check2-circle me-2" style={{ color: '#6dd5fa' }}></i>
                 {selectedRepos.length} {language === 'es' ? 'repositorios seleccionados' : 'repositories selected'}
               </p>
+              
+              {/* Solo mostrar algunos repositorios como ejemplo si hay muchos */}
+              {selectedRepos.length > 0 && (
+                <div style={{ 
+                  display: 'flex', 
+                  flexWrap: 'wrap', 
+                  justifyContent: 'center',
+                  gap: '8px',
+                  marginTop: '10px'
+                }}>
+                  {repositories.filter(repo => selectedRepos.includes(repo.id))
+                    .slice(0, 5)
+                    .map(repo => (
+                      <span key={repo.id} style={{
+                        padding: '6px 12px',
+                        background: 'rgba(56,152,241,0.3)',
+                        borderRadius: '8px',
+                        color: '#e0e0e0',
+                        fontSize: '0.95rem',
+                        border: '1px solid rgba(56,152,241,0.5)',
+                        boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
+                      }}>
+                        <i className="bi bi-github me-1"></i>
+                        {repo.name}
+                      </span>
+                    ))
+                  }
+                  {selectedRepos.length > 5 && (
+                    <span style={{
+                      padding: '6px 12px',
+                      background: 'rgba(35,39,43,0.8)',
+                      borderRadius: '8px',
+                      color: '#e0e0e0',
+                      fontSize: '0.95rem'
+                    }}>
+                      <i className="bi bi-plus-lg me-1"></i>
+                      {selectedRepos.length - 5} {language === 'es' ? 'más' : 'more'}
+                    </span>
+                  )}
+                </div>
+              )}
+              
+              <button 
+                onClick={() => setIsRepoModalOpen(true)}
+                style={{
+                  marginTop: '12px',
+                  padding: '8px 16px',
+                  background: 'linear-gradient(90deg, #3898f1 60%, #6dd5fa 100%)',
+                  border: 'none',
+                  borderRadius: '8px',
+                  color: '#fff',
+                  fontSize: '0.95rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  boxShadow: '0 3px 8px rgba(0,0,0,0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  margin: '0 auto'
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'linear-gradient(90deg, #4ba3f7 60%, #84ddfb 100%)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 5px 12px rgba(0,0,0,0.4)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'linear-gradient(90deg, #3898f1 60%, #6dd5fa 100%)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 3px 8px rgba(0,0,0,0.3)';
+                }}
+              >
+                <i className="bi bi-pencil-square"></i>
+                {language === 'es' ? 'Modificar selección' : 'Edit selection'}
+              </button>
             </div>
           )}
           
-          {/* Lista de repositorios (solo se muestra cuando showRepoSelector es true) */}
-          {showRepoSelector ? (
-            <div className="repo-list" style={{ 
-              maxHeight: '550px',
-              overflowY: 'auto', 
-              marginBottom: '25px',
-              borderRadius: '14px',
-              border: selectedRepos.length > 0 ? '2px solid rgba(56,152,241,0.6)' : '1.5px solid rgba(56,152,241,0.3)',
-              boxShadow: selectedRepos.length > 0 
-                ? 'inset 0 0 15px rgba(0,0,0,0.25), 0 0 10px rgba(56,152,241,0.2)' 
-                : 'inset 0 0 15px rgba(0,0,0,0.25)',
-              padding: '10px',
-              margin: '0 15px',
-              transition: 'border 0.3s, box-shadow 0.3s'
-            }}>
-              {repositories.map(repo => (
-                <div 
-                  key={repo.id} 
-                  className="repo-item d-flex"
-                  style={{ 
-                    cursor: 'pointer',
-                    borderBottom: '2px solid rgba(56,152,241,0.2)',
-                    transition: 'all 0.3s',
-                    background: selectedRepos.includes(repo.id) ? 'rgba(56,152,241,0.25)' : 'rgba(0,0,0,0.15)',
-                    borderRadius: '10px', // Aumentamos el radio para un aspecto más moderno
-                    margin: '12px 4px', // Aumentamos el margen vertical entre elementos
-                    padding: '18px', // Aumentamos el padding para dar más espacio interno
-                    boxShadow: selectedRepos.includes(repo.id) 
-                      ? '0 4px 12px rgba(56,152,241,0.4)' 
-                      : '0 2px 6px rgba(0,0,0,0.2)', // Añadimos una sombra suave incluso a los no seleccionados
-                    border: selectedRepos.includes(repo.id) ? '2px solid rgba(56,152,241,0.8)' : '2px solid transparent',
-                    position: 'relative',
-                    overflow: 'hidden'
-                  }}
-                  onClick={() => toggleSelect(repo.id)}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.background = selectedRepos.includes(repo.id) ? 'rgba(56,152,241,0.35)' : 'rgba(255,255,255,0.1)';
-                    e.currentTarget.style.boxShadow = selectedRepos.includes(repo.id) ? '0 5px 15px rgba(56,152,241,0.5)' : '0 3px 10px rgba(0,0,0,0.2)';
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.background = selectedRepos.includes(repo.id) ? 'rgba(56,152,241,0.25)' : 'rgba(0,0,0,0.15)';
-                    e.currentTarget.style.boxShadow = selectedRepos.includes(repo.id) ? '0 4px 12px rgba(56,152,241,0.4)' : 'none';
-                    e.currentTarget.style.transform = 'translateY(0)';
-                  }}
-                >                <div 
-                  style={{
-                    position: 'relative',
-                    marginRight: '15px',
-                    minWidth: '24px'
-                  }}
-                >
-                  <input 
-                    type="checkbox" 
-                    checked={selectedRepos.includes(repo.id)} 
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      toggleSelect(repo.id);
-                    }}
-                    className="mt-1"
-                    style={{ 
-                      width: '20px', 
-                      height: '20px',
-                      accentColor: '#3898f1',
-                      cursor: 'pointer',
-                      opacity: '0.9',
-                      transform: 'scale(1.2)',
-                      boxShadow: selectedRepos.includes(repo.id) ? '0 0 5px rgba(109,213,250,0.8)' : 'none',
-                      borderRadius: '4px'
-                    }}
-                  />
-                  {selectedRepos.includes(repo.id) && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '-8px',
-                      right: '-8px',
-                      background: '#6dd5fa',
-                      borderRadius: '50%',
-                      padding: '2px',
-                      width: '16px',
-                      height: '16px',
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      boxShadow: '0 0 5px rgba(0,0,0,0.3)'
-                    }}>
-                      <i className="bi bi-check" style={{ fontSize: '10px', color: '#212529' }}></i>
-                    </div>
-                  )}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div className="d-flex justify-content-between align-items-start mb-2">
-                    <strong style={{ fontSize: '1.25rem', color: '#6dd5fa', textShadow: '0 0 10px rgba(0,0,0,0.7)' }}>{repo.name.replace(/-/g, ' ').replace(/_/g, ' ')}</strong>
-                    <div>
-                      <span className="badge me-2" style={{
-                        background: '#212529',
-                        fontSize: '0.9rem',
-                        padding: '5px 8px'
-                      }} title="Stars">
-                        <i className="bi bi-star-fill me-1" style={{color: '#FFD700'}}></i> {repo.stargazers_count}
-                      </span>
-                      <span className="badge" style={{
-                        background: '#6c757d',
-                        fontSize: '0.9rem',
-                        padding: '5px 8px'
-                      }} title={t.updated}>
-                        <i className="bi bi-clock-history me-1"></i> {formatDate(repo.updated_at)}
-                      </span>
-                    </div>
-                  </div>
-                  <p className="mb-3" style={{ 
-                    color: '#e0e0e0', 
-                    fontStyle: repo.description ? 'normal' : 'italic',
-                    fontSize: '1rem',
-                    lineHeight: '1.4'
-                  }}>
-                    {repo.description || t.noDescription}
-                  </p>
-                    {(repo.language || (repo.topics && repo.topics.length > 0)) && (
-                    <div>
-                      <small style={{ color: '#9e9e9e', fontSize: '0.95rem', fontWeight: '600' }}>{t.techsUsed}:</small>
-                      <div className="tech-tags mt-2" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                        {repo.language && (
-                          <span className="badge me-1" style={{ 
-                            background: 'linear-gradient(90deg,#3898f1 60%,#6dd5fa 100%)',
-                            padding: '6px 10px',
-                            fontSize: '0.9rem',
-                            borderRadius: '6px',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                            border: '1px solid rgba(255,255,255,0.25)'
-                          }}>
-                            <i className="bi bi-code-slash me-1"></i> {repo.language}
-                          </span>
-                        )}
-                        {repo.topics && repo.topics.map(topic => (
-                          <span key={topic} className="badge me-1" style={{ 
-                            background: 'rgba(23,162,184,0.8)',
-                            padding: '6px 10px',
-                            fontSize: '0.9rem',
-                            borderRadius: '6px',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                            border: '1px solid rgba(255,255,255,0.25)'
-                          }}>
-                            <i className="bi bi-hash"></i> {topic}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}                </div>
-              </div>
-            ))}
-          </div>
-          ) : null}
-            {/* Contenedor de botones centrado, sin causar overflow horizontal */}
+          {/* Componente modal para selección de repositorios */}
+          <RepoSelectorModal 
+            isOpen={isRepoModalOpen}
+            onClose={() => setIsRepoModalOpen(false)}
+            repositories={repositories}
+            selectedRepos={selectedRepos}
+            toggleSelect={toggleSelect}
+            toggleSelectAll={toggleSelectAll}
+            formatDate={formatDate}
+            t={t}
+            language={language}
+          />
+
+          {/* Contenedor de botones centrado, sin causar overflow horizontal */}
           <div style={{
               marginTop: '30px',
               marginBottom: '15px',

@@ -13,54 +13,5 @@
       "createdAt": "2025-05-05T21:16:49.140Z"
     }
   ],
-  "lfEP1PSBgpceYPgkuqFwUVsAb8t1": [
-    {
-      "title": "Your Portfolio",
-      "description": "Build your own portfolio",
-      "technologies": [
-        "JavaScript"
-      ],
-      "github": "https://github.com/Jergasus/Your-Portfolio",
-      "status": "Finalizado",
-      "id": "1746976204093-968319359",
-      "uid": "lfEP1PSBgpceYPgkuqFwUVsAb8t1",
-      "createdAt": "2025-05-11T15:10:04.093Z"
-    },
-    {
-      "title": "Unity Game",
-      "description": "",
-      "technologies": [
-        "ShaderLab"
-      ],
-      "github": "https://github.com/Jergasus/Unity_Game",
-      "status": "Finalizado",
-      "id": "1746976204093-595659505",
-      "uid": "lfEP1PSBgpceYPgkuqFwUVsAb8t1",
-      "createdAt": "2025-05-11T15:10:04.093Z"
-    },
-    {
-      "title": "Dataset Analysis and Preprocessing",
-      "description": "",
-      "technologies": [
-        "R"
-      ],
-      "github": "https://github.com/Jergasus/Dataset_Analysis_and_Preprocessing",
-      "status": "Finalizado",
-      "id": "1746976204093-949568098",
-      "uid": "lfEP1PSBgpceYPgkuqFwUVsAb8t1",
-      "createdAt": "2025-05-11T15:10:04.093Z"
-    },
-    {
-      "title": "Artificial Cluster",
-      "description": "",
-      "technologies": [
-        "HTML"
-      ],
-      "github": "https://github.com/Jergasus/Artificial_Cluster",
-      "status": "Finalizado",
-      "id": "1746976204093-621737511",
-      "uid": "lfEP1PSBgpceYPgkuqFwUVsAb8t1",
-      "createdAt": "2025-05-11T15:10:04.093Z"
-    }
-  ]
+  "lfEP1PSBgpceYPgkuqFwUVsAb8t1": []
 }
