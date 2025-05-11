@@ -13,5 +13,30 @@
       "createdAt": "2025-05-05T21:16:49.140Z"
     }
   ],
-  "lfEP1PSBgpceYPgkuqFwUVsAb8t1": []
+  "lfEP1PSBgpceYPgkuqFwUVsAb8t1": [
+    {
+      "title": "synthetic promoter designer",
+      "description": "Web application that allows users to design and simulate synthetic gene promoters by selecting transcription factor binding sites (TFBS), sequence motifs, and regulatory elements. The app predicts the strength or activity of the promoter using a machine learning model trained on known promoter datasets",
+      "technologies": [
+        "GitHub"
+      ],
+      "github": "https://github.com/lauraloops/synthetic-promoter-designer",
+      "status": "Finalizado",
+      "id": "1746988316589-978208237",
+      "uid": "lfEP1PSBgpceYPgkuqFwUVsAb8t1",
+      "createdAt": "2025-05-11T18:31:56.589Z"
+    },
+    {
+      "title": "Skyscanner",
+      "description": "Hackupc challenge: Skyscanner",
+      "technologies": [
+        "Python"
+      ],
+      "github": "https://github.com/lauraloops/Skyscanner",
+      "status": "Finalizado",
+      "id": "1746988316589-977014451",
+      "uid": "lfEP1PSBgpceYPgkuqFwUVsAb8t1",
+      "createdAt": "2025-05-11T18:31:56.589Z"
+    }
+  ]
 }
