@@ -1,6 +1,7 @@
 import React from "react";
 import { projects as projectData } from "./data/projects";
 import ProjectCard from "./components/ProjectCard";
+import GitHubImport from "./components/GitHubImport";
 import "./App.css";
 import { auth } from "./firebase";
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
@@ -20,6 +21,9 @@ function App() {
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [formModalVisible, setFormModalVisible] = useState(false);
+  // Nuevo estado para el modal de GitHub
+  const [showGitHubImport, setShowGitHubImport] = useState(false);
+  const [githubModalVisible, setGithubModalVisible] = useState(false);
   const [editingField, setEditingField] = useState(null);
   const [filterStatus, setFilterStatus] = useState('');
   // Obtener todas las tecnologías únicas de los proyectos
@@ -200,6 +204,9 @@ function App() {
       loading: 'Cargando proyectos...',
       edit: 'Editar',
       delete: 'Eliminar',
+      importFromGitHub: 'Importar desde GitHub',
+      githubImportSuccess: 'Proyectos importados correctamente',
+      githubImportError: 'Error al importar proyectos'
     },
     en: {
       welcome: 'Welcome,',
@@ -229,6 +236,9 @@ function App() {
       loading: 'Loading projects...',
       edit: 'Edit',
       delete: 'Delete',
+      importFromGitHub: 'Import from GitHub',
+      githubImportSuccess: 'Projects successfully imported',
+      githubImportError: 'Error importing projects'
     }
   };
 
@@ -258,6 +268,87 @@ function App() {
       navigator.clipboard.writeText(url);
       alert('¡Enlace público copiado!');
     }
+  };
+  // Nueva función para manejar la importación de GitHub
+  const handleGitHubImport = (newProjects) => {
+    // Si el usuario cierra el modal sin importar
+    if (!newProjects) {
+      setShowGitHubImport(false);
+      return;
+    }
+
+    setLoading(true);
+    // Agregar los nuevos proyectos a la lista existente
+    const updatedProjects = [...projects, ...newProjects];
+    
+    // Guardar en el backend
+    saveProjects(updatedProjects)
+      .then(() => {
+        // Cerrar el modal cuando termine
+        setShowGitHubImport(false);
+        
+        // Mostrar mensaje de éxito con el número de proyectos importados
+        const successMessage = `${texts[language].githubImportSuccess} (${newProjects.length})`;
+        
+        // Crear un div de alerta flotante para mostrar el mensaje
+        const alertDiv = document.createElement('div');
+        alertDiv.style.position = 'fixed';
+        alertDiv.style.top = '20px';
+        alertDiv.style.left = '50%';
+        alertDiv.style.transform = 'translateX(-50%)';
+        alertDiv.style.backgroundColor = '#28a745';
+        alertDiv.style.color = 'white';
+        alertDiv.style.padding = '15px 25px';
+        alertDiv.style.borderRadius = '10px';
+        alertDiv.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
+        alertDiv.style.zIndex = '9999';
+        alertDiv.style.display = 'flex';
+        alertDiv.style.alignItems = 'center';
+        alertDiv.style.gap = '10px';
+        alertDiv.innerHTML = `<i class="bi bi-check-circle-fill"></i> ${successMessage}`;
+        document.body.appendChild(alertDiv);
+        
+        // Eliminar el mensaje después de 3 segundos
+        setTimeout(() => {
+          alertDiv.style.opacity = '0';
+          alertDiv.style.transition = 'opacity 0.5s ease';
+          setTimeout(() => document.body.removeChild(alertDiv), 500);
+        }, 3000);
+      })
+      .catch(error => {
+        console.error('Error al importar proyectos:', error);
+        
+        // Mostrar mensaje de error
+        const errorMessage = texts[language].githubImportError;
+        
+        // Crear un div de alerta flotante para mostrar el mensaje de error
+        const alertDiv = document.createElement('div');
+        alertDiv.style.position = 'fixed';
+        alertDiv.style.top = '20px';
+        alertDiv.style.left = '50%';
+        alertDiv.style.transform = 'translateX(-50%)';
+        alertDiv.style.backgroundColor = '#dc3545';
+        alertDiv.style.color = 'white';
+        alertDiv.style.padding = '15px 25px';
+        alertDiv.style.borderRadius = '10px';
+        alertDiv.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
+        alertDiv.style.zIndex = '9999';
+        alertDiv.style.display = 'flex';
+        alertDiv.style.alignItems = 'center';
+        alertDiv.style.gap = '10px';
+        alertDiv.innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i> ${errorMessage}`;
+        document.body.appendChild(alertDiv);
+        
+        // Eliminar el mensaje después de 3 segundos
+        setTimeout(() => {
+          alertDiv.style.opacity = '0';
+          alertDiv.style.transition = 'opacity 0.5s ease';
+          setTimeout(() => document.body.removeChild(alertDiv), 500);
+        }, 3000);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   const saveProjects = async (newProjects) => {
@@ -324,6 +415,43 @@ function App() {
         <section>
           <div className="d-flex align-items-center justify-content-center mb-4" style={{ gap: '1rem'}}>
             <h2 className="featured-title mb-0">{texts[language].projects}</h2>
+            <div className="d-flex" style={{ gap: '0.7rem', zIndex: 100 }}>
+              {/* Botón para abrir el filtro */}
+              <button
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', transition: 'all 0.4s', transform: showFilter ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                onClick={() => {
+                  setFilterModalVisible(true);
+                  setShowFilter(prev => !prev);
+                }}
+                className="bottom-translate-top"
+                title={texts[language].filterProjects}
+              >
+                <img src={miFiltro} alt="Filter" style={{ width: '30px', height: '30px', opacity: 0.6 }} />
+              </button>
+              {/* Botón para agregar nuevo proyecto */}
+              <button
+                onClick={() => {
+                  setFormModalVisible(true);
+                  setShowForm(true);
+                }}
+                style={{ background: 'none', border: 'none', fontSize: '30px', color: '#3898f1', cursor: 'pointer', width: 32, height: 32, padding: 0, margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                className="bottom-translate-top"
+                title={texts[language].addProject}
+              >
+                +
+              </button>              {/* Nuevo botón para importar desde GitHub */}
+              <button
+                onClick={() => {
+                  setGithubModalVisible(true);
+                  setShowGitHubImport(true);
+                }}
+                style={{ background: '#24292e', border: '2px solid white', fontSize: '22px', color: 'white', cursor: 'pointer', width: 38, height: 38, borderRadius: '50%', padding: 0, margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 10px rgba(0,0,0,0.2)' }}
+                className="bottom-translate-top"
+                title={texts[language].importFromGitHub}
+              >
+                <i className="bi bi-github"></i>
+              </button>
+            </div>
           </div>
           {/* Filtro avanzado con icono */}
           {filterModalVisible && (
@@ -661,6 +789,64 @@ function App() {
             ))}
           </div>
         </section>
+      )}
+      {/* Modal de importación desde GitHub */}
+      {githubModalVisible && (
+        <div
+          className={`modal-fade ${showGitHubImport ? 'modal-fade-in' : 'modal-fade-out'}`}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 2000,
+            background: 'rgba(35,39,43,0.32)',
+            backdropFilter: 'blur(2px)',
+          }}
+        >
+          <div style={{
+            background: 'rgba(35,39,43,0.85)',
+            color: '#fff',
+            borderRadius: 22,
+            boxShadow: '0 8px 32px 0 rgba(13,110,253,0.22)',
+            padding: 32,
+            minWidth: 480,
+            width: 600,
+            border: '1.5px solid rgba(56,152,241,0.18)',
+            fontFamily: 'inherit',
+            transition: 'all 0.25s',
+            maxWidth: '95vw',
+            position: 'relative',
+          }}>
+            <button 
+              onClick={() => setShowGitHubImport(false)} 
+              style={{ 
+                position: 'absolute', 
+                top: 12, 
+                right: 16, 
+                background: 'none', 
+                border: 'none', 
+                color: '#fff', 
+                fontSize: 28, 
+                cursor: 'pointer', 
+                lineHeight: 1, 
+                textShadow: '0 0 8px #3898f1' 
+              }} 
+              title={texts[language].close}
+            >×</button>
+
+            <GitHubImport 
+              onImport={handleGitHubImport} 
+              language={language} 
+              texts={texts} 
+              user={user} 
+            />
+          </div>
+        </div>
       )}
     </div>
   );

@@ -15,16 +15,40 @@
   ],
   "lfEP1PSBgpceYPgkuqFwUVsAb8t1": [
     {
-      "title": "hola",
-      "description": "fdfd",
+      "title": "synthetic promoter designer",
+      "description": "Web application that allows users to design and simulate synthetic gene promoters by selecting transcription factor binding sites (TFBS), sequence motifs, and regulatory elements. The app predicts the strength or activity of the promoter using a machine learning model trained on known promoter datasets",
       "technologies": [
-        "ffdfdf"
+        "GitHub"
       ],
-      "github": "https://github.com/Jergasus/Your-Portfolio",
+      "github": "https://github.com/lauraloops/synthetic-promoter-designer",
       "status": "Finalizado",
-      "id": "1746615128270",
+      "id": "1746964377223-978208237",
       "uid": "lfEP1PSBgpceYPgkuqFwUVsAb8t1",
-      "createdAt": "2025-05-07T10:52:08.270Z"
+      "createdAt": "2025-05-11T11:52:57.223Z"
+    },
+    {
+      "title": "Skyscanner",
+      "description": "Hackupc challenge: Skyscanner",
+      "technologies": [
+        "Python"
+      ],
+      "github": "https://github.com/lauraloops/Skyscanner",
+      "status": "Finalizado",
+      "id": "1746964377223-977014451",
+      "uid": "lfEP1PSBgpceYPgkuqFwUVsAb8t1",
+      "createdAt": "2025-05-11T11:52:57.223Z"
+    },
+    {
+      "title": "fibropred",
+      "description": "",
+      "technologies": [
+        "GitHub"
+      ],
+      "github": "https://github.com/lauraloops/fibropred",
+      "status": "Finalizado",
+      "id": "1746964377223-903707955",
+      "uid": "lfEP1PSBgpceYPgkuqFwUVsAb8t1",
+      "createdAt": "2025-05-11T11:52:57.223Z"
     }
   ]
 }
